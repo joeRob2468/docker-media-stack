@@ -135,36 +135,26 @@ networks:
 
 volumes:
   data: # Sonarr, Radarr, Prowlarr, and Unpackerr data mount
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/data"
+      mountpoint: "${MEDIA_VOLUME}/data"
 
   sonarr: # Sonarr app data.
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/sonarr"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/sonarr"
 
   radarr: # Radarr app data.
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/radarr"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/radarr"
 
   prowlarr: # Prowlarr app data.
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/prowlarr"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/prowlarr"
 
   unpackerr: # unPackerr app data.
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/unpackerr"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/unpackerr"

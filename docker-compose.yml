@@ -95,13 +95,9 @@ volumes:
   letsencrypt: # Traefik Lets Encrypt certs.
     driver: local
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/letsencrypt"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/letsencrypt"
 
   gluetun: # Gluetun app data.
     driver: local
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/gluetun"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/gluetun"

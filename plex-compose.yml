@@ -65,22 +65,16 @@ networks:
 
 volumes:
   media: # Media library
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/data/media"
+      mountpoint: "${MEDIA_VOLUME}/data/media"
 
   overseerr: # Overseerr app data.
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/overseerr"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/overseerr"
 
   plex: # Plex app data.
-    driver: local
+    driver: local-persist
     driver_opts:
-      type: "nfs"
-      o: "addr=${NFS_SERVER},rw,tcp,nolock,hard,wsize=65536,rsize=65536"
-      device: ":${NFS_VOLUME}/docker_data/plex"
+      mountpoint: "${MEDIA_VOLUME}/docker_data/plex"

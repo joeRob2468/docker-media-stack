@@ -20,6 +20,9 @@ By the end of this guide, you'll have a powerful, fully-automated media system t
 
 Check out the full guide here: https://passthebits.com/
 
+## Volumes
+This stack uses the local-persist volume driver - https://github.com/MatchbookLab/local-persist
+
 ## Quick Start
 Carefully read the entire compose file before deploying. Comments are included with details and additional supported variables. Confirm that all uncommented service variables and volumes are correctly configured before deploying. The compose file is available on GitHub.
 ```
