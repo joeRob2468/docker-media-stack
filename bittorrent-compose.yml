@@ -16,7 +16,7 @@ services:
     env_file: ./env/bittorrent.env
     volumes:
       - bittorrent:/config
-      - torrent:/media
+      - torrent:/data/torrents
     healthcheck:
       test: curl -f http://localhost:8088 || exit 1
       interval: 10s

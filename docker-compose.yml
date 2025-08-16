@@ -22,8 +22,8 @@ services:
       - --api.dashboard=false
       - --serversTransport.insecureSkipVerify=true
       # Set up LetsEncrypt certificate resolver
-      # - --certificatesresolvers.letsencrypt.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
-      - --certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.letsencrypt.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
+      # - --certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
       - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare
       - --certificatesResolvers.letsencrypt.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53
@@ -93,11 +93,11 @@ networks:
 
 volumes:
   letsencrypt: # Traefik Lets Encrypt certs.
-    driver: local
+    driver: local-persist
     driver_opts:
       mountpoint: "${MEDIA_VOLUME}/docker_data/letsencrypt"
 
   gluetun: # Gluetun app data.
-    driver: local
+    driver: local-persist
     driver_opts:
       mountpoint: "${MEDIA_VOLUME}/docker_data/gluetun"

@@ -70,6 +70,34 @@ services:
         condition: service_healthy
         restart: true
 
+  byparr:
+    # See more: https://docs.linuxserver.io/images/docker-prowlarr
+    image: ghcr.io/datahub-local/byparr:main
+    container_name: byparr
+    restart: always
+    network_mode: service:gluetun
+    env_file: ./env/arr.env
+    environment:
+      USE_HEADLESS: 'true'
+    #healthcheck:
+    #  test: curl -f http://localhost:8191/health || exit 1
+    #  interval: 10s
+    #  timeout: 3s
+    #  start_period: 60s
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+      traefik:
+        condition: service_healthy
+        restart: true
+      sonarr:
+        condition: service_healthy
+        restart: true
+      radarr:
+        condition: service_healthy
+        restart: true
+  
   prowlarr:
     # See more: https://docs.linuxserver.io/images/docker-prowlarr
     image: lscr.io/linuxserver/prowlarr:latest
@@ -105,6 +133,9 @@ services:
         restart: true
       radarr:
         condition: service_healthy
+        restart: true
+      byparr:
+        condition: service_started
         restart: true
 
   unpackerr:
