@@ -1,0 +1,46 @@
+---
+services:
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    user: 1000:1000
+    restart: always
+    env_file: ./env/audiobookshelf.env
+    volumes:
+      - books:/audiobooks
+#      - podcasts:/podcasts
+      - config:/config
+      - metadata:/metadata
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.${DOMAIN}`)
+      - traefik.http.routers.audiobookshelf.entrypoints=websecure
+      - traefik.http.services.audiobookshelf.loadbalancer.server.port=13378
+    depends_on:
+      traefik:
+        condition: service_healthy
+        restart: true
+
+networks:
+  default:
+    name: media_network
+    driver: bridge
+    attachable: true
+
+volumes:
+  books: # Books library
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/data/media/books"
+#  podcasts: # Podcasts library
+#    driver: local-persist
+#    driver_opts:
+#      mountpoint: "${MEDIA_VOLUME}/data/media/podcasts"
+  config: # Config
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/audiobookshelf/config"
+  metadata: # Metadata
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/audiobookshelf/metadata"

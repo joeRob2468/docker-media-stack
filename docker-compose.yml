@@ -84,6 +84,7 @@ include:
   - bittorrent-compose.yml
   - arr-compose.yml
   - plex-compose.yml
+  - audiobookshelf-compose.yml
 
 networks:
   default:
