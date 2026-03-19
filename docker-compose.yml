@@ -72,19 +72,12 @@ services:
     volumes:
       - gluetun:/gluetun
 
-  watchtower:
-    # See more: https://github.com/containrrr/watchtower
-    image: containrrr/watchtower
-    container_name: watchtower
-    env_file: ./env/watchtower.env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
 include:
   - bittorrent-compose.yml
   - arr-compose.yml
   - plex-compose.yml
   - audiobookshelf-compose.yml
+  - dockmon-compose.yml
 
 networks:
   default:

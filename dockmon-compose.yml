@@ -1,0 +1,42 @@
+services:
+  dockmon:
+    # See more: https://github.com/darthnorse/dockmon
+    image: darthnorse/dockmon:latest
+    container_name: dockmon
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - TZ=${TZ:-America/Chicago}
+      - REVERSE_PROXY_MODE=true
+      - DOCKMON_CORS_ORIGINS=https://dockmon.${DOMAIN}
+    volumes:
+      - dockmon:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dockmon.rule=Host(`dockmon.${DOMAIN}`)
+      - traefik.http.routers.dockmon.entrypoints=websecure
+      - traefik.http.services.dockmon.loadbalancer.server.port=80
+    depends_on:
+      traefik:
+        condition: service_healthy
+        restart: true
+
+networks:
+  default:
+    name: media_network
+    driver: bridge
+    attachable: true
+
+volumes:
+  dockmon: # DockMon app data.
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/dockmon"
