@@ -63,7 +63,7 @@ All credentials are files in `secrets/*.secret` (gitignored), passed as Docker s
 
 | Kind | Secrets | Source |
 |---|---|---|
-| Generated | `authentik-pg-pass`, `authentik-secret-key`, `authentik-bootstrap-password`, `authentik-{shelfmark,cwa,audiobookshelf}-oidc`, `gluetun-apikey`, `sonarr-api`, `radarr-api`, `prowlarr-api` | random |
+| Generated | `authentik-pg-pass`, `authentik-secret-key`, `authentik-bootstrap-password`, `authentik-{shelfmark,cwa,audiobookshelf}-oidc`, `authentik-{shelfmark,cwa,audiobookshelf,plex}-client-id`, `gluetun-apikey`, `sonarr-api`, `radarr-api`, `prowlarr-api` | random |
 | Built | `gluetun-auth-config` | Gluetun control-server auth file containing `gluetun-apikey` |
 | Prompted | `openvpn_user`, `openvpn_password` | PIA account |
 | | `cloudflare-token`, `cloudflare-email` | Cloudflare API token with Zone.DNS edit |
@@ -186,7 +186,7 @@ Manual:
 1. First visit creates the root admin. Library: **Audiobooks** → `/audiobooks`.
 2. **Settings → Authentication → OpenID Connect**:
    - Issuer URL `https://auth.example.com/application/o/audiobookshelf/` → Auto-populate
-   - Client ID: `client_id` of the Audiobookshelf provider in the blueprint; Client Secret: `cat secrets/authentik-audiobookshelf-oidc.secret`
+   - Client ID: `cat secrets/authentik-audiobookshelf-client-id.secret`; Client Secret: `cat secrets/authentik-audiobookshelf-oidc.secret`
    - Button text `Login with Plex`, Auto Register on, Match existing users by **email**
    - Allowed mobile redirect URIs: `audiobookshelf://oauth`; Group claim empty
    - Keep password authentication on as a fallback. Restart the container if it asks.
@@ -194,7 +194,7 @@ Manual:
 ### Calibre-Web-Automated (`library.`)
 1. Log in with `admin` / `admin123` and change the password immediately.
 2. **Admin → Edit Basic Configuration → Feature Configuration → Login type OAuth → Generic OIDC**:
-   - Client ID from the blueprint, Client Secret: `cat secrets/authentik-cwa-oidc.secret`
+   - Client ID: `cat secrets/authentik-cwa-client-id.secret`, Client Secret: `cat secrets/authentik-cwa-oidc.secret`
    - Metadata URL `https://auth.example.com/application/o/cwa/.well-known/openid-configuration`
    - Scope `openid profile email`, username field `preferred_username`, email field `email`
    - Admin group `media-admins`, group-based admin management on

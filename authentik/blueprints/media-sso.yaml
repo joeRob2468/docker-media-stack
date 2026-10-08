@@ -6,7 +6,7 @@ version: 1
 metadata:
   name: Media stack SSO
 entries:
-  # Plex login: only accounts with access to your Plex server (allow_friends off)
+  # Plex login: only accounts with access to the PLEX_SERVER_ID server (allow_friends off)
   - model: authentik_sources_plex.plexsource
     id: source-plex
     identifiers:
@@ -14,7 +14,7 @@ entries:
     attrs:
       name: Plex
       enabled: true
-      client_id: <client-id>
+      client_id: !File /run/secrets/authentik-plex-client-id
       allowed_servers:
         - !Env PLEX_SERVER_ID   # Plex server's machine identifier (.env)
       allow_friends: false
@@ -61,7 +61,7 @@ entries:
         - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
         - !KeyOf scope-email-verified
         - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
-      client_id: <client-id>
+      client_id: !File /run/secrets/authentik-shelfmark-client-id
       client_secret: !File /run/secrets/authentik-shelfmark-oidc
       redirect_uris:
         - matching_mode: strict
@@ -82,7 +82,7 @@ entries:
       name: Calibre-Web-Automated
     attrs:
       <<: *provider
-      client_id: <client-id>
+      client_id: !File /run/secrets/authentik-cwa-client-id
       client_secret: !File /run/secrets/authentik-cwa-oidc
       redirect_uris:
         - matching_mode: strict
@@ -103,7 +103,7 @@ entries:
       name: Audiobookshelf
     attrs:
       <<: *provider
-      client_id: <client-id>
+      client_id: !File /run/secrets/authentik-audiobookshelf-client-id
       client_secret: !File /run/secrets/authentik-audiobookshelf-oidc
       redirect_uris:
         - matching_mode: strict

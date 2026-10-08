@@ -8,6 +8,15 @@ secrets:
   # akadmin password on first start (bootstrap env can't use file://)
   authentik-bootstrap-password:
     file: ./secrets/authentik-bootstrap-password.secret
+  # OIDC/Plex client IDs used by the media-sso blueprint
+  authentik-plex-client-id:
+    file: ./secrets/authentik-plex-client-id.secret
+  authentik-shelfmark-client-id:
+    file: ./secrets/authentik-shelfmark-client-id.secret
+  authentik-cwa-client-id:
+    file: ./secrets/authentik-cwa-client-id.secret
+  authentik-audiobookshelf-client-id:
+    file: ./secrets/authentik-audiobookshelf-client-id.secret
   # Plex token for the Plex source in the media-sso blueprint
   authentik-plex-token:
     file: ./secrets/authentik-plex-token.secret
@@ -85,6 +94,10 @@ services:
       - authentik-audiobookshelf-oidc
       - authentik-bootstrap-password
       - authentik-plex-token
+      - authentik-plex-client-id
+      - authentik-shelfmark-client-id
+      - authentik-cwa-client-id
+      - authentik-audiobookshelf-client-id
     env_file: ./env/authentik.env
     environment:
       # Used by the media-sso blueprint (!Env)

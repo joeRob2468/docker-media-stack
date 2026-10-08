@@ -8,6 +8,8 @@ secrets:
   # Same file Authentik's blueprint reads; separate name to avoid clashing with authentik-compose.yml
   shelfmark-oidc:
     file: ./secrets/authentik-shelfmark-oidc.secret
+  shelfmark-client-id:
+    file: ./secrets/authentik-shelfmark-client-id.secret
   # Same Telegram bot/chat as Seerr's notifications
   telegram-bot-token:
     file: ./secrets/telegram-bot-token.secret
@@ -51,6 +53,7 @@ services:
       - hardcover-token
       - aa-donator-key
       - shelfmark-oidc
+      - shelfmark-client-id
       - telegram-bot-token
       - telegram-chat-id
     env_file: ./env/shelfmark.env
