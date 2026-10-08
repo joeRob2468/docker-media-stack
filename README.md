@@ -2,7 +2,7 @@
 
 Media server stack for example: VPN-protected downloads, *arr automation, Plex, books/audiobooks, and single sign-on with Plex accounts. Originally based on the guide at https://passthebits.com/.
 
-Contents: [Services](#services) · [Paths](#paths) · [Secrets](#secrets) · [Fresh install](#fresh-install) · [Restore from existing data](#restore-from-existing-data) · [Manual app setup](#manual-app-setup) · [Single sign-on](#single-sign-on-authentik) · [Operations](#operations)
+Contents: [Services](#services) · [Paths](#paths) · [Secrets](#secrets) · [Fresh install](#fresh-install) · [Restore from existing data](#restore-from-existing-data) · [Manual app setup](#manual-app-setup) · [Connecting apps](#connecting-apps-and-devices) · [Single sign-on](#single-sign-on-authentik) · [Operations](#operations)
 
 ## Services
 
@@ -195,7 +195,8 @@ Manual:
    - Scope `openid profile email`, username field `preferred_username`, email field `email`
    - Admin group `media-admins`, group-based admin management on
 3. Restart: `docker compose restart calibre-web-automated`.
-4. Hardcover metadata works automatically (`HARDCOVER_TOKEN` from secrets).
+4. **Admin → Edit Basic Configuration → Default Settings for New Users:** enable Allow Downloads, Allow eBook Viewer, Allow Changing Password (optionally Allow Editing Public Shelves). The default is none of these, which leaves Plex-login users unable to download, read, or set the password OPDS/KOReader need. Give existing users the same under Admin → Users.
+5. Hardcover metadata works automatically (`HARDCOVER_TOKEN` from secrets).
 
 ### Shelfmark (`books.`)
 All settings come from `env/shelfmark.env` and secrets (and are locked in its UI). One manual step, a local fallback admin for when Authentik is down:
@@ -212,8 +213,46 @@ Keep Shelfmark's IRC sources disabled: they don't use the VPN proxy.
 ### DockMon (`dockmon.`)
 Create the admin account on first visit. Turn auto-update **off for gluetun** (see Operations); leave it on for the rest.
 
-### Moon+ Reader
-Net Library → add OPDS catalog `https://library.example.com/opds` with your CWA login. Reading progress syncs through Moon+'s own Dropbox/Drive/WebDAV option, not CWA. On home Wi-Fi this needs the LAN DNS override (see DNS).
+## Connecting apps and devices
+
+Everyone logs in with their Plex account ("Login with Plex") on the web. A few readers and apps use a username/password instead (OPDS, KOReader sync, some third-party apps): those need an app password set in the service's own profile first (see each section).
+
+**At home:** phones and other devices on the home Wi-Fi need the LAN DNS override (see [DNS records](#dns-records-cloudflare-all-dns-only)); without it, use mobile data. Outside the home everything works directly.
+
+| What | Address |
+|---|---|
+| Audiobooks | `https://audiobookshelf.example.com` |
+| Ebook library (web) | `https://library.example.com` |
+| Ebook catalog (OPDS) | `https://library.example.com/opds` |
+| Request ebooks/audiobooks | `https://books.example.com` |
+| Request movies/TV | `https://overseerr.example.com` |
+
+### Audiobooks: Audiobookshelf
+- **Phone (Android/iOS):** install the Audiobookshelf app (links at https://www.audiobookshelf.org). Server address `https://audiobookshelf.example.com`, then **Login with Plex**. Downloads for offline listening and progress sync work in the app.
+- **Third-party iOS apps** (e.g. ShelfPlayer, Plappa): same server address. If an app has no OpenID/"Login with Plex" option, an admin sets a password for that user in Audiobookshelf (Settings → Users) and the app logs in with username/password.
+- **Desktop:** use the web player in the browser; "Install app" in Chrome/Edge gives it its own window.
+
+### Ebooks: Calibre-Web-Automated
+First set an app password: log in at `library.` with Plex → click your username (top right) → set **Password** → Save. Use your CWA username (shown there) with this password below. If the password field is missing, ask an admin to enable "Allow Changing Password" for you.
+
+- **Moon+ Reader (Android):** Net Library → **+** (Add OPDS catalog) → URL `https://library.example.com/opds`, your CWA username and app password. Browse and download books into Moon+. Reading position syncs through Moon+'s own Dropbox/Google Drive/WebDAV option (Settings → Sync), not through CWA.
+- **KOReader (Android, Kobo, Kindle, PocketBook):**
+  - Library: Search (magnifier) → OPDS catalog → **+** → `https://library.example.com/opds`, username, app password.
+  - Progress sync with CWA: open `https://library.example.com/kosync` in a browser and follow the plugin instructions there (custom sync server, same username/password). Progress then also shows in CWA.
+- **iOS readers with OPDS** (e.g. Marvin, KyBook, Panels for comics): add an OPDS catalog with the same URL and credentials.
+- **Desktop:** read in the browser (CWA's built-in reader), or use **Thorium Reader** (Windows/macOS/Linux): Catalogs → Add OPDS feed → same URL; it asks for username/password on first open.
+- **Calibre desktop:** CWA's library is a Calibre library on the server, but desktop Calibre can't attach to it remotely, and opening `metadata.db` over a network share while CWA runs risks corrupting it. Edit metadata in CWA's web UI instead, or download books from CWA and add them to a local Calibre library.
+- **Kobo e-readers (optional, not enabled):** CWA can sync shelves to Kobo devices. Admin: Admin → Edit Basic Configuration → Feature Configuration → **Enable Kobo sync**. User: profile → **Create Kobo Sync Token**, then put the shown `api_endpoint` line into `.kobo/Kobo/Kobo eReader.conf` on the device (USB).
+- **Kindle (optional, not enabled):** Send-to-Kindle needs an SMTP account in Admin → Edit Email Server Settings and each user's Kindle email in their profile.
+
+### Requests: Shelfmark and Seerr
+Web apps, no native client. On a phone open `https://books.example.com` / `https://overseerr.example.com` and use **Add to Home Screen** (Safari Share menu / Chrome menu) for an app-like icon. Requested ebooks show up in CWA, audiobooks in Audiobookshelf.
+
+### Plex
+Official Plex apps on any device, signed in with the Plex account the library is shared with. Plexamp for music if libraries are added later.
+
+### Admin apps (*arrs, qBittorrent)
+For admins only: mobile apps such as nzb360 (Android) or Ruddarr (iOS) connect to `https://sonarr.example.com` etc. with the API key from `secrets/<app>-api.secret`. qBittorrent: `https://bittorrent.example.com` with the WebUI login.
 
 ## Books flow
 
