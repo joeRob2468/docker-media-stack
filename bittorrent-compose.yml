@@ -5,6 +5,8 @@ secrets:
     file: ./secrets/bittorrent-user.secret
   bittorrent-password:
     file: ./secrets/bittorrent-password.secret
+  gluetun-apikey:
+    file: ./secrets/gluetun-apikey.secret
 
 services:
   bittorrent:
@@ -43,7 +45,10 @@ services:
     secrets:
       - bittorrent-user
       - bittorrent-password
+      - gluetun-apikey
     env_file: ./env/bittorrent.env
+    # Image reads QBT_*/GTN_APIKEY from env only; load them from the secret files at startup
+    command: ["sh", "-c", "export QBT_USERNAME=\"$$(cat /run/secrets/bittorrent-user)\" QBT_PASSWORD=\"$$(cat /run/secrets/bittorrent-password)\" GTN_APIKEY=\"$$(cat /run/secrets/gluetun-apikey)\"; exec /usr/src/app/entrypoint.sh"]
     depends_on:
       bittorrent:
         condition: service_healthy
