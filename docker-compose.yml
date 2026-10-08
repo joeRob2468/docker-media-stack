@@ -54,6 +54,8 @@ services:
         # Containers can't reach public hostnames (no hairpin NAT); resolve these to traefik directly
         aliases:
           - auth.${DOMAIN}
+        # Fixed so qBittorrent can skip its own login for requests via Traefik (already passed Authentik)
+        ipv4_address: 172.18.255.250
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt

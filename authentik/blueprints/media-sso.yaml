@@ -201,3 +201,43 @@ entries:
     attrs:
       providers:
         - !KeyOf provider-admin-tools
+
+  # DockMon: its own OIDC login against Authentik (it controls Docker, so its login stays on),
+  # limited to the admin groups
+  - model: authentik_providers_oauth2.oauth2provider
+    id: provider-dockmon
+    identifiers:
+      name: DockMon
+    attrs:
+      <<: *provider
+      client_id: !File /run/secrets/authentik-dockmon-client-id
+      client_secret: !File /run/secrets/authentik-dockmon-oidc
+      redirect_uris:
+        - matching_mode: strict
+          url: !Format ["https://dockmon.%s/api/v2/auth/oidc/callback", !Env DOMAIN]
+
+  - model: authentik_core.application
+    id: app-dockmon
+    identifiers:
+      slug: dockmon
+    attrs:
+      name: DockMon
+      provider: !KeyOf provider-dockmon
+      meta_launch_url: !Format ["https://dockmon.%s", !Env DOMAIN]
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf app-dockmon
+      group: !Find [authentik_core.group, [name, media-admins]]
+    attrs:
+      order: 0
+      enabled: true
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf app-dockmon
+      group: !Find [authentik_core.group, [name, authentik Admins]]
+    attrs:
+      order: 1
+      enabled: true

@@ -17,6 +17,10 @@ secrets:
     file: ./secrets/authentik-cwa-client-id.secret
   authentik-audiobookshelf-client-id:
     file: ./secrets/authentik-audiobookshelf-client-id.secret
+  authentik-dockmon-client-id:
+    file: ./secrets/authentik-dockmon-client-id.secret
+  authentik-dockmon-oidc:
+    file: ./secrets/authentik-dockmon-oidc.secret
   # Plex token for the Plex source in the media-sso blueprint
   authentik-plex-token:
     file: ./secrets/authentik-plex-token.secret
@@ -102,6 +106,8 @@ services:
       - authentik-shelfmark-client-id
       - authentik-cwa-client-id
       - authentik-audiobookshelf-client-id
+      - authentik-dockmon-client-id
+      - authentik-dockmon-oidc
     env_file: ./env/authentik.env
     environment:
       # Used by the media-sso blueprint (!Env)

@@ -24,6 +24,8 @@ services:
       PGID: ${PGID}
       # Pin the API key (linuxserver FILE__ prefix reads it from the secret)
       FILE__SONARR__AUTH__APIKEY: /run/secrets/sonarr-api
+      # Login handled by Authentik forward auth (Traefik); /api still needs the API key
+      SONARR__AUTH__METHOD: External
     volumes:
       - sonarr:/config
       - data:/media
@@ -69,6 +71,8 @@ services:
       PGID: ${PGID}
       # Pin the API key (linuxserver FILE__ prefix reads it from the secret)
       FILE__RADARR__AUTH__APIKEY: /run/secrets/radarr-api
+      # Login handled by Authentik forward auth (Traefik); /api still needs the API key
+      RADARR__AUTH__METHOD: External
     volumes:
       - radarr:/config
       - data:/media
@@ -142,6 +146,8 @@ services:
       PGID: ${PGID}
       # Pin the API key (linuxserver FILE__ prefix reads it from the secret)
       FILE__PROWLARR__AUTH__APIKEY: /run/secrets/prowlarr-api
+      # Login handled by Authentik forward auth (Traefik); /api still needs the API key
+      PROWLARR__AUTH__METHOD: External
     volumes: 
       - prowlarr:/config
       - data:/media

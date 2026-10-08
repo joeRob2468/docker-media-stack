@@ -147,6 +147,7 @@ Only needed on a fresh install. Values below are what the current stack uses.
    - `books` / audiobooks: created by Shelfmark when it first sends a torrent; default path is fine.
 4. **Connection**: leave the listening port alone (the port forwarder sets it to Gluetun's forwarded port); UPnP off.
 5. **BitTorrent**: queueing on, max active downloads/uploads/torrents 4.
+6. **WebUI → Bypass authentication for clients in whitelisted IP subnets**: on, `172.18.255.250/32` (Traefik's fixed IP; Authentik already checked the user). Leave localhost bypass off.
 
 ### Sonarr (`sonarr.`) and Radarr (`radarr.`)
 Do the same in both; differences in brackets as Sonarr / Radarr.
@@ -217,7 +218,13 @@ Keep Shelfmark's IRC sources disabled: they don't use the VPN proxy.
 Notifications: new requests, finished and failed downloads go to Telegram (same bot/chat as Seerr), built by `shelfmark/start.sh` from the Telegram secrets. Users can add their own routes under their Shelfmark settings → Notifications.
 
 ### DockMon (`dockmon.`)
-Create the admin account on first visit. Turn auto-update **off for gluetun** (see Operations); leave it on for the rest.
+Create the admin account on first visit (keep it as fallback). Then **Settings → OIDC**:
+- Provider URL `https://auth.example.com/application/o/dockmon/`
+- Client ID: `cat secrets/authentik-dockmon-client-id.secret`, Client Secret: `cat secrets/authentik-dockmon-oidc.secret`
+- Scopes `openid profile email`, groups claim `groups`
+- Group mapping: `media-admins` → DockMon's administrator group
+- Enable, and turn on **SSO default** so the login page goes straight to Authentik.
+ Turn auto-update **off for gluetun** (see Operations); leave it on for the rest.
 
 ## Connecting apps and devices
 
@@ -258,7 +265,7 @@ Web apps, no native client. On a phone open `https://books.example.com` / `https
 Official Plex apps on any device, signed in with the Plex account the library is shared with. Plexamp for music if libraries are added later.
 
 ### Admin apps (*arrs, qBittorrent, DockMon)
-Browser: log in with Plex (must be in `media-admins`), then the app's own login. Mobile apps such as nzb360 (Android) or Ruddarr (iOS) connect to `https://sonarr.example.com` etc. with the API key from `secrets/<app>-api.secret`; `/api` isn't behind Authentik. qBittorrent and DockMon have no API exception, so their mobile apps won't work from outside.
+Browser: log in with Plex (must be in `media-admins`); no second login. Mobile apps such as nzb360 (Android) or Ruddarr (iOS) connect to `https://sonarr.example.com` etc. with the API key from `secrets/<app>-api.secret`; `/api` isn't behind Authentik. qBittorrent and DockMon have no API exception, so their mobile apps won't work from outside.
 
 ## Books flow
 
@@ -276,7 +283,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - `media-admins` members are admins in Shelfmark and CWA.
 - Emails are sent as verified so apps link existing accounts by email.
 - Local logins remain in each app as a fallback.
-- **Admin tools** (Sonarr, Radarr, Prowlarr, qBittorrent, DockMon) sit behind Authentik forward auth (`authentik@docker` Traefik middleware, "Admin tools" proxy provider in domain mode on the embedded outpost). Only `media-admins` and `authentik Admins` get through; everyone else is denied. Sonarr/Radarr/Prowlarr `/api` bypasses it and still requires the API key. The apps' own logins stay as a second layer.
+- **Admin tools** (Sonarr, Radarr, Prowlarr, qBittorrent, DockMon) sit behind Authentik forward auth (`authentik@docker` Traefik middleware, "Admin tools" proxy provider in domain mode on the embedded outpost). Only `media-admins` and `authentik Admins` get through; everyone else is denied. Sonarr/Radarr/Prowlarr `/api` bypasses it and still requires the API key. No second login: the *arrs use `AUTH__METHOD=External` (env), qBittorrent skips its login for Traefik's fixed IP `172.18.255.250` only, and DockMon logs in via its own OIDC against Authentik. Inside `media_network` the *arr UIs are reachable without login; only this stack's containers are on it.
 - "Login with Plex" reuses an existing Authentik session. If the browser is signed in to Authentik as `akadmin`, the apps would get `akadmin`; a `deny-akadmin` policy (blueprint) blocks that with a message. Sign out at `auth.` first, or do Authentik admin work in a separate browser profile.
 
 ## Operations
