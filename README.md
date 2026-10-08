@@ -70,11 +70,12 @@ All credentials are files in `secrets/*.secret` (gitignored), passed as Docker s
 | | `authentik-plex-token` | Plex token of the server owner ([how to find it](https://support.plex.tv/articles/204059436)) |
 | | `hardcover-token` | https://hardcover.app/account/api (scopes incl. `read:lists`, `write:lists`) |
 | | `aa-donator-key` | Anna's Archive account page |
+| | `telegram-bot-token`, `telegram-chat-id` | Telegram bot (@BotFather) and chat used for notifications; same as Seerr's Telegram settings |
 
 How they're used:
 - Sonarr/Radarr/Prowlarr API keys are pinned with `FILE__<APP>__AUTH__APIKEY`, so the keys are known before the apps first start. Don't regenerate them in the app UI.
 - The linuxserver `FILE__` loader keeps a trailing newline as part of the value. Secret files must not end with a newline (`init-secrets.sh` writes them without one; use `printf '%s'` when writing by hand).
-- Shelfmark and Authentik's worker read some secrets through a `sh -c 'export ...'` wrapper because those settings can't be loaded from files directly.
+- Shelfmark (`shelfmark/start.sh`) and Authentik's worker (entrypoint in compose) export some secrets into env at startup, because those settings can't be loaded from files directly.
 
 To write a secret by hand without leaving it in shell history (zsh):
 ```
@@ -168,6 +169,7 @@ Do the same in both; differences in brackets as Sonarr / Radarr.
 1. Sign in with Plex; server `plex`, port `32400`, no SSL; enable Movies and TV Shows.
 2. Radarr: hostname `gluetun`, port `7878`, API key from secrets, profile `HD-1080p`, root `/media/media/movies`, default server.
 3. Sonarr: hostname `gluetun`, port `8989`, API key from secrets, profile `HD - 720p/1080p`, root `/media/media/tv`, default server.
+4. Notifications → Telegram: bot token and chat ID (same values as `secrets/telegram-*.secret`). Current types: pending, approved, available (consider adding auto-approved and failed).
 
 ### Authentik (`auth.`)
 Mostly automatic:
@@ -209,6 +211,8 @@ u = input('Username: ').strip(); p = getpass.getpass('Password: ')
 UserDB('/config/users.db').create_user(username=u, password_hash=generate_password_hash(p), auth_source='builtin', role='admin')"
 ```
 Keep Shelfmark's IRC sources disabled: they don't use the VPN proxy.
+
+Notifications: new requests, finished and failed downloads go to Telegram (same bot/chat as Seerr), built by `shelfmark/start.sh` from the Telegram secrets. Users can add their own routes under their Shelfmark settings → Notifications.
 
 ### DockMon (`dockmon.`)
 Create the admin account on first visit. Turn auto-update **off for gluetun** (see Operations); leave it on for the rest.

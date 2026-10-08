@@ -8,6 +8,11 @@ secrets:
   # Same file Authentik's blueprint reads; separate name to avoid clashing with authentik-compose.yml
   shelfmark-oidc:
     file: ./secrets/authentik-shelfmark-oidc.secret
+  # Same Telegram bot/chat as Seerr's notifications
+  telegram-bot-token:
+    file: ./secrets/telegram-bot-token.secret
+  telegram-chat-id:
+    file: ./secrets/telegram-chat-id.secret
 
 services:
   calibre-web-automated:
@@ -46,6 +51,8 @@ services:
       - hardcover-token
       - aa-donator-key
       - shelfmark-oidc
+      - telegram-bot-token
+      - telegram-chat-id
     env_file: ./env/shelfmark.env
     environment:
       TZ: ${TZ}
@@ -53,15 +60,13 @@ services:
       CALIBRE_WEB_URL: https://library.${DOMAIN}
       AUDIOBOOK_LIBRARY_URL: https://audiobookshelf.${DOMAIN}
       NO_PROXY: gluetun,calibre-web-automated,auth.${DOMAIN},localhost,127.0.0.1
-    # Shelfmark reads settings from env only; load the secret ones from the secret files at startup
-    command: ["sh", "-c", "export HARDCOVER_API_KEY=\"$$(cat /run/secrets/hardcover-token)\" AA_DONATOR_KEY=\"$$(cat /run/secrets/aa-donator-key)\" OIDC_CLIENT_SECRET=\"$$(cat /run/secrets/shelfmark-oidc)\"; exec /app/entrypoint.sh"]
+    # Exports secret-backed settings (Shelfmark reads settings from env only), then runs /app/entrypoint.sh
+    command: ["sh", "/start.sh"]
     volumes:
       - shelfmark:/config
+      - ./shelfmark/start.sh:/start.sh:ro
       # Same /data layout as qBittorrent, so torrent paths match and audiobook hardlinks work
       - media_data:/data
-      # Log in with CWA accounts (AUTH_METHOD=cwa). Whole dir, not just app.db: CWA uses SQLite WAL,
-      # so recent changes (e.g. password updates) live in app.db-wal until checkpointed
-      - cwa_config:/auth:ro
     healthcheck:
       test: curl -sf http://localhost:8084/api/health || exit 1
       interval: 30s

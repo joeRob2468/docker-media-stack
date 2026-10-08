@@ -52,6 +52,8 @@ declare -A HINT=(
   [authentik-plex-token]="Plex token of the server owner (https://support.plex.tv/articles/204059436)"
   [hardcover-token]="Hardcover API token from https://hardcover.app/account/api"
   [aa-donator-key]="Anna's Archive donator key (account page)"
+  [telegram-bot-token]="Telegram bot token (@BotFather; same bot as Seerr notifications)"
+  [telegram-chat-id]="Telegram chat ID for notifications"
 )
 
 # Subshell with pipefail off: tr gets SIGPIPE once head has enough bytes
