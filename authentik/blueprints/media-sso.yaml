@@ -31,6 +31,36 @@ entries:
       sources:
         - !KeyOf source-plex
 
+  # App logins go straight to Plex: a login flow whose only step offers just the Plex source with
+  # no username field, which Authentik follows automatically. auth.<domain> itself keeps the default
+  # flow (password login for akadmin).
+  - model: authentik_stages_identification.identificationstage
+    id: stage-plex-only
+    identifiers:
+      name: media-plex-identification
+    attrs:
+      user_fields: []
+      sources:
+        - !KeyOf source-plex
+      show_source_labels: true
+
+  - model: authentik_flows.flow
+    id: flow-media-login
+    identifiers:
+      slug: media-login
+    attrs:
+      name: Log in with Plex
+      title: Log in with Plex
+      designation: authentication
+      authentication: none
+
+  - model: authentik_flows.flowstagebinding
+    identifiers:
+      target: !KeyOf flow-media-login
+      stage: !KeyOf stage-plex-only
+    attrs:
+      order: 10
+
   - model: authentik_core.group
     identifiers:
       name: media-admins
@@ -52,6 +82,7 @@ entries:
     identifiers:
       name: Shelfmark
     attrs: &provider
+      authentication_flow: !KeyOf flow-media-login
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
@@ -165,6 +196,7 @@ entries:
       name: Admin tools
     attrs:
       mode: forward_domain
+      authentication_flow: !KeyOf flow-media-login
       external_host: !Format ["https://auth.%s", !Env DOMAIN]
       cookie_domain: !Env DOMAIN
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]

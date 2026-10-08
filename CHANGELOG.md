@@ -33,6 +33,7 @@
 - Security: Sonarr/Radarr/Prowlarr/qBittorrent/DockMon behind Authentik forward auth (blueprint "Admin tools" proxy provider, domain mode, embedded outpost; media-admins + authentik Admins). `/api` of the *arrs excluded (API key). Secret files `chmod 600` (Postgres password 644), `secrets/` 700, `.env` 600. Server: SSH key added, fail2ban (sshd + recidive) enabled.
 - Single login for admin tools: *arrs `AUTH__METHOD=External` (env), Traefik fixed IP 172.18.255.250 + qBittorrent auth whitelist for it, DockMon OIDC app in blueprint (`secrets/authentik-dockmon-{client-id,oidc}.secret`; configured in DockMon UI).
 - Sonarr/Radarr Plex notification host `172.18.0.7` → `plex` (IP changed on Plex recreate, breaking library refresh after restarts/updates).
+- Authentik `media-login` flow (Plex-only identification stage, no user fields → automatic source redirect) as authentication flow for all media providers; removes the extra Authentik login page. Shelfmark request defaults → `request_book` (users request books, admin picks releases; avoids source lookups on every browse).
 - README: connecting apps and devices; CWA default user permissions (default role 0 blocks downloads/OPDS for Plex users).
 - `README.md`: rewritten for current stack (services, books flow, SSO, secrets, new-machine steps, operations).
 - `env/gluetun.env`: + `HTTPPROXY: on` (Shelfmark `HTTP_PROXY=http://gluetun:8888`; verified egress = VPN IP).

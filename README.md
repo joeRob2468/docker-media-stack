@@ -282,6 +282,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - Plex source: only accounts with access to the Plex server `PLEX_SERVER_ID` can log in ("Allow friends" off).
 - `authentik/blueprints/media-sso.yaml` defines the Plex source, its login button, the `media-admins` group and the OIDC apps. Authentik reapplies it when the file changes and hourly: **edit the file, not the UI**.
 - `media-admins` members are admins in Shelfmark and CWA.
+- App logins (Shelfmark, CWA, Audiobookshelf, DockMon, admin tools) use the `media-login` flow: only the Plex source and no username field, so Authentik goes straight to Plex. `auth.example.com` itself keeps the default flow with password login (for `akadmin`).
 - Emails are sent as verified so apps link existing accounts by email.
 - Local logins remain in each app as a fallback.
 - **Admin tools** (Sonarr, Radarr, Prowlarr, qBittorrent, DockMon) sit behind Authentik forward auth (`authentik@docker` Traefik middleware, "Admin tools" proxy provider in domain mode on the embedded outpost). Only `media-admins` and `authentik Admins` get through; everyone else is denied. Sonarr/Radarr/Prowlarr `/api` bypasses it and still requires the API key. No second login: the *arrs use `AUTH__METHOD=External` (env), qBittorrent skips its login for Traefik's fixed IP `172.18.255.250` only, and DockMon logs in via its own OIDC against Authentik. Inside `media_network` the *arr UIs are reachable without login; only this stack's containers are on it.
