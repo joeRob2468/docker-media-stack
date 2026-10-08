@@ -20,6 +20,12 @@
 - `init-secrets.sh`: creates missing `secrets/*.secret` referenced by compose files (random or prompted); never overwrites.
 - CWA: Hardcover metadata via `secrets/hardcover-token.secret` → `FILE__HARDCOVER_TOKEN` (linuxserver env-from-file). Token copied from Shelfmark's saved key.
 - Shelfmark: all non-default UI settings moved to `env/shelfmark.env` (generated from its settings registry; verified identical). `HARDCOVER_API_KEY`, `AA_DONATOR_KEY`, `OIDC_CLIENT_SECRET` exported from secrets by `command:` wrapper (`secrets/aa-donator-key.secret` new). Env-set settings are locked in the UI.
+- More automation (fresh installs need fewer manual steps):
+  - Sonarr/Radarr/Prowlarr API keys pinned from secrets via `FILE__<APP>__AUTH__APIKEY` (values unchanged; `secrets/prowlarr-api.secret` new). linuxserver `FILE__` keeps trailing newlines → briefly broke Radarr/Prowlarr API auth (401) until newlines were stripped; `init-secrets.sh` now writes secrets without newline.
+  - Gluetun control-server auth from `secrets/gluetun-auth-config.secret` (`HTTP_CONTROL_SERVER_AUTH_CONFIG_FILEPATH`), built by `init-secrets.sh` from `gluetun-apikey`; identical to the old `docker_data/gluetun/auth/config.toml`.
+  - Authentik worker: `AUTHENTIK_BOOTSTRAP_PASSWORD` from secret via entrypoint wrapper (first start only). Blueprint now also defines the Plex source (token from `secrets/authentik-plex-token.secret`) and the login-page binding; verified unchanged.
+  - `init-secrets.sh`: generates *arr API keys (hex) and bootstrap password, builds gluetun auth file, prompts for Plex token.
+- README: DNS records, path map, secrets table, fresh install, restore from existing data, per-app manual setup (qBittorrent paths/categories, remote path mappings, Prowlarr Byparr proxy + `flare` tag, Seerr, Plex, ABS/CWA OIDC, Shelfmark fallback admin, Moon+).
 - `README.md`: rewritten for current stack (services, books flow, SSO, secrets, new-machine steps, operations).
 - `env/gluetun.env`: + `HTTPPROXY: on` (Shelfmark `HTTP_PROXY=http://gluetun:8888`; verified egress = VPN IP).
 - `env/gluetun.env`: + `SERVER_NAMES: Server-12612-2a,Server-12613-2a`. After recreate, Server-10961/10994 (x.x.x.x) refused PIA PF API (`10.x.0.1:19999` connection refused) → forwarder crash loop. 12612/12613 (x.x.x.x) work. Remove pin if those servers disappear.

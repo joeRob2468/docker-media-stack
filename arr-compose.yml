@@ -5,6 +5,8 @@ secrets:
     file: ./secrets/radarr-api.secret
   sonarr-api:
     file: ./secrets/sonarr-api.secret
+  prowlarr-api:
+    file: ./secrets/prowlarr-api.secret
 
 services:
   sonarr:
@@ -14,6 +16,11 @@ services:
     restart: always
     network_mode: service:gluetun
     env_file: ./env/arr.env
+    secrets:
+      - sonarr-api
+    environment:
+      # Pin the API key (linuxserver FILE__ prefix reads it from the secret)
+      FILE__SONARR__AUTH__APIKEY: /run/secrets/sonarr-api
     volumes:
       - sonarr:/config
       - data:/media
@@ -46,6 +53,11 @@ services:
     restart: always
     network_mode: service:gluetun
     env_file: ./env/arr.env
+    secrets:
+      - radarr-api
+    environment:
+      # Pin the API key (linuxserver FILE__ prefix reads it from the secret)
+      FILE__RADARR__AUTH__APIKEY: /run/secrets/radarr-api
     volumes:
       - radarr:/config
       - data:/media
@@ -105,6 +117,11 @@ services:
     restart: always
     network_mode: service:gluetun
     env_file: ./env/arr.env
+    secrets:
+      - prowlarr-api
+    environment:
+      # Pin the API key (linuxserver FILE__ prefix reads it from the secret)
+      FILE__PROWLARR__AUTH__APIKEY: /run/secrets/prowlarr-api
     volumes: 
       - prowlarr:/config
       - data:/media

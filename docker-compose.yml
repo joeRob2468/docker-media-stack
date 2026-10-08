@@ -9,6 +9,8 @@ secrets:
     file: ./secrets/openvpn_user.secret
   openvpn_password:
     file: ./secrets/openvpn_password.secret
+  gluetun-auth-config:
+    file: ./secrets/gluetun-auth-config.secret
 
 services:
   traefik:
@@ -73,6 +75,7 @@ services:
     secrets:
       - openvpn_user
       - openvpn_password
+      - gluetun-auth-config
     env_file: ./env/gluetun.env
     volumes:
       - gluetun:/gluetun

@@ -5,6 +5,12 @@ secrets:
     file: ./secrets/authentik-pg-pass.secret
   authentik-secret-key:
     file: ./secrets/authentik-secret-key.secret
+  # akadmin password on first start (bootstrap env can't use file://)
+  authentik-bootstrap-password:
+    file: ./secrets/authentik-bootstrap-password.secret
+  # Plex token for the Plex source in the media-sso blueprint
+  authentik-plex-token:
+    file: ./secrets/authentik-plex-token.secret
   # OIDC client secrets, read by the media-sso blueprint
   authentik-shelfmark-oidc:
     file: ./secrets/authentik-shelfmark-oidc.secret
@@ -67,7 +73,8 @@ services:
     image: ghcr.io/goauthentik/server:2026.8.3
     container_name: authentik-worker
     restart: always
-    command: worker
+    # Wrapper: AUTHENTIK_BOOTSTRAP_* can't use file://, so export it from the secret (only read on first start)
+    entrypoint: ["sh", "-c", "export AUTHENTIK_BOOTSTRAP_PASSWORD=\"$$(cat /run/secrets/authentik-bootstrap-password)\"; exec dumb-init -- ak worker"]
     shm_size: 512mb
     # No docker.sock: outposts not needed for OIDC-only use
     secrets:
@@ -76,6 +83,8 @@ services:
       - authentik-shelfmark-oidc
       - authentik-cwa-oidc
       - authentik-audiobookshelf-oidc
+      - authentik-bootstrap-password
+      - authentik-plex-token
     env_file: ./env/authentik.env
     volumes:
       - authentik_data:/data

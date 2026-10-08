@@ -1,11 +1,36 @@
 # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
-# Media stack SSO: admin group + OIDC apps for Shelfmark, CWA, Audiobookshelf.
+# Media stack SSO: Plex login source, admin group, OIDC apps for Shelfmark, CWA, Audiobookshelf.
 # Client secrets come from docker secrets (secrets/authentik-<app>-oidc.secret).
-# Not covered: Plex source (needs a Plex login in the browser to set up).
+# Plex token comes from secrets/authentik-plex-token.secret.
 version: 1
 metadata:
   name: Media stack SSO
 entries:
+  # Plex login: only accounts with access to your Plex server (allow_friends off)
+  - model: authentik_sources_plex.plexsource
+    id: source-plex
+    identifiers:
+      slug: plex
+    attrs:
+      name: Plex
+      enabled: true
+      client_id: <client-id>
+      allowed_servers:
+        - <plex-server-id>   # plex-server
+      allow_friends: false
+      plex_token: !File /run/secrets/authentik-plex-token
+      authentication_flow: !Find [authentik_flows.flow, [slug, default-source-authentication]]
+      enrollment_flow: !Find [authentik_flows.flow, [slug, default-source-enrollment]]
+      user_matching_mode: identifier
+
+  # Show the Plex button on the login page
+  - model: authentik_stages_identification.identificationstage
+    identifiers:
+      name: default-authentication-identification
+    attrs:
+      sources:
+        - !KeyOf source-plex
+
   - model: authentik_core.group
     identifiers:
       name: media-admins
