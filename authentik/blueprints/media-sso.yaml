@@ -68,6 +68,7 @@ entries:
           url: !Format ["https://books.%s/api/auth/oidc/callback", !Env DOMAIN]
 
   - model: authentik_core.application
+    id: app-shelfmark
     identifiers:
       slug: shelfmark
     attrs:
@@ -88,6 +89,7 @@ entries:
           url: !Format ["https://library.%s/login/generic/authorized", !Env DOMAIN]
 
   - model: authentik_core.application
+    id: app-cwa
     identifiers:
       slug: cwa
     attrs:
@@ -110,9 +112,47 @@ entries:
           url: !Format ["https://audiobookshelf.%s/audiobookshelf/auth/openid/mobile-redirect", !Env DOMAIN]
 
   - model: authentik_core.application
+    id: app-audiobookshelf
     identifiers:
       slug: audiobookshelf
     attrs:
       name: Audiobookshelf
       provider: !KeyOf provider-audiobookshelf
       meta_launch_url: !Format ["https://audiobookshelf.%s", !Env DOMAIN]
+
+  # Block the local akadmin account from the media apps. Without this, an open akadmin session in
+  # Authentik silently logs "Login with Plex" into the apps as akadmin (and auto-creates accounts).
+  - model: authentik_policies_expression.expressionpolicy
+    id: policy-deny-akadmin
+    identifiers:
+      name: deny-akadmin
+    attrs:
+      expression: |
+        if request.user.username == "akadmin":
+            ak_message("Signed in to Authentik as akadmin. Sign out at auth.example.com, then use Login with Plex.")
+            return False
+        return True
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf app-shelfmark
+      policy: !KeyOf policy-deny-akadmin
+    attrs:
+      order: 0
+      enabled: true
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf app-cwa
+      policy: !KeyOf policy-deny-akadmin
+    attrs:
+      order: 0
+      enabled: true
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf app-audiobookshelf
+      policy: !KeyOf policy-deny-akadmin
+    attrs:
+      order: 0
+      enabled: true

@@ -274,6 +274,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - `media-admins` members are admins in Shelfmark and CWA.
 - Emails are sent as verified so apps link existing accounts by email.
 - Local logins remain in each app as a fallback.
+- "Login with Plex" reuses an existing Authentik session. If the browser is signed in to Authentik as `akadmin`, the apps would get `akadmin`; a `deny-akadmin` policy (blueprint) blocks that with a message. Sign out at `auth.` first, or do Authentik admin work in a separate browser profile.
 
 ## Operations
 
