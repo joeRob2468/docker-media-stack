@@ -19,6 +19,7 @@
   - Cloudflare DNS: CNAME `auth` → `media.example.com` (DNS only).
 - `init-secrets.sh`: creates missing `secrets/*.secret` referenced by compose files (random or prompted); never overwrites.
 - CWA: Hardcover metadata via `secrets/hardcover-token.secret` → `FILE__HARDCOVER_TOKEN` (linuxserver env-from-file). Token copied from Shelfmark's saved key.
+- Shelfmark: all non-default UI settings moved to `env/shelfmark.env` (generated from its settings registry; verified identical). `HARDCOVER_API_KEY`, `AA_DONATOR_KEY`, `OIDC_CLIENT_SECRET` exported from secrets by `command:` wrapper (`secrets/aa-donator-key.secret` new). Env-set settings are locked in the UI.
 - `README.md`: rewritten for current stack (services, books flow, SSO, secrets, new-machine steps, operations).
 - `env/gluetun.env`: + `HTTPPROXY: on` (Shelfmark `HTTP_PROXY=http://gluetun:8888`; verified egress = VPN IP).
 - `env/gluetun.env`: + `SERVER_NAMES: Server-12612-2a,Server-12613-2a`. After recreate, Server-10961/10994 (x.x.x.x) refused PIA PF API (`10.x.0.1:19999` connection refused) → forwarder crash loop. 12612/12613 (x.x.x.x) work. Remove pin if those servers disappear.

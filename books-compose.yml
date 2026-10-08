@@ -3,6 +3,11 @@
 secrets:
   hardcover-token:
     file: ./secrets/hardcover-token.secret
+  aa-donator-key:
+    file: ./secrets/aa-donator-key.secret
+  # Same file Authentik's blueprint reads; separate name to avoid clashing with authentik-compose.yml
+  shelfmark-oidc:
+    file: ./secrets/authentik-shelfmark-oidc.secret
 
 services:
   calibre-web-automated:
@@ -33,7 +38,13 @@ services:
     container_name: shelfmark
     user: 1000:1000
     restart: always
+    secrets:
+      - hardcover-token
+      - aa-donator-key
+      - shelfmark-oidc
     env_file: ./env/shelfmark.env
+    # Shelfmark reads settings from env only; load the secret ones from the secret files at startup
+    command: ["sh", "-c", "export HARDCOVER_API_KEY=\"$$(cat /run/secrets/hardcover-token)\" AA_DONATOR_KEY=\"$$(cat /run/secrets/aa-donator-key)\" OIDC_CLIENT_SECRET=\"$$(cat /run/secrets/shelfmark-oidc)\"; exec /app/entrypoint.sh"]
     volumes:
       - shelfmark:/config
       # Same /data layout as qBittorrent, so torrent paths match and audiobook hardlinks work

@@ -36,6 +36,7 @@ declare -A HINT=(
   [sonarr-api]="Sonarr API key (Settings > General)"
   [radarr-api]="Radarr API key (Settings > General)"
   [hardcover-token]="Hardcover API token from https://hardcover.app/account/api"
+  [aa-donator-key]="Anna's Archive donator key (account page)"
 )
 
 # Subshell with pipefail off: tr gets SIGPIPE once head has enough bytes

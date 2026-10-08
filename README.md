@@ -43,6 +43,7 @@ Shelfmark's IRC sources do not use the proxy; keep them disabled. Details in `PL
 - Members of `media-admins` are admins in Shelfmark and CWA. Plex users are created as external users (apps only, no Authentik dashboard).
 - Emails are sent as verified so apps can link existing accounts by email.
 - Local admin logins are kept in each app as a fallback if Authentik is down.
+- Shelfmark is configured entirely from `env/shelfmark.env` + secrets (settings set there are locked in its UI). CWA and Audiobookshelf keep their OIDC settings in their own databases (`docker_data/`).
 - Containers can't reach public hostnames (no hairpin NAT), so Traefik has a network alias for `auth.${DOMAIN}`.
 
 ## Secrets
@@ -54,7 +55,7 @@ Credentials live in `secrets/*.secret` (gitignored) and are passed as Docker sec
 ./init-secrets.sh           # create missing ones
 ```
 
-The script reads every `./secrets/*.secret` referenced by the compose files. It generates random values where nothing external depends on them (Authentik keys, OIDC client secrets, Gluetun API key) and prompts (hidden input) for the rest (PIA, Cloudflare, qBittorrent, Plex claim, Sonarr/Radarr API keys). Existing files are never overwritten.
+The script reads every `./secrets/*.secret` referenced by the compose files. It generates random values where nothing external depends on them (Authentik keys, OIDC client secrets, Gluetun API key) and prompts (hidden input) for the rest (PIA, Cloudflare, qBittorrent, Plex claim, Sonarr/Radarr API keys, Hardcover token, Anna's Archive donator key). Existing files are never overwritten.
 
 When restoring onto a new machine, copy `secrets/` together with `${MEDIA_VOLUME}/docker_data/`: app databases (CWA, Audiobookshelf, *arr) and Authentik reference the existing values.
 
