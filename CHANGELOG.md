@@ -6,7 +6,7 @@
 - `GTN_APIKEY` moved from `env/bittorrent.env` to `secrets/gluetun-apikey.secret` (+ `.example`), matching other credentials.
 - `bittorrent-compose.yml`: `gluetun-apikey` secret on `bittorrent_port_forwarder`; `command:` also exports `GTN_APIKEY` from `/run/secrets/gluetun-apikey`. Forwarder recreated, retrieves port 36775.
 - 2026-10-05 `*.bak-20261005-claude*` files in this repo already removed.
-- Books stack (see `PLANNED.md`): `books-compose.yml` (+ `include:`), `env/cwa.env`, `env/shelfmark.env`.
+- Books stack: `books-compose.yml` (+ `include:`), `env/cwa.env`, `env/shelfmark.env`.
   - `calibre-web-automated` → `library.${DOMAIN}` (OPDS `/opds`), library `data/media/ebooks`, ingest `data/cwa-ingest`.
   - `shelfmark` → `books.${DOMAIN}`, CWA logins (`app.db` ro), ebooks → CWA ingest, audiobooks → `data/media/books` (hardlinked).
   - Cloudflare DNS: CNAME `books`, `library` → `media.example.com` (DNS only).

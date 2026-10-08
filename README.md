@@ -287,4 +287,4 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - DockMon auto-update is off for Gluetun (updating it races its dependents); update it manually, alone, with the command above.
 - Gluetun is pinned to PIA servers `Server-12612-2a` / `Server-12613-2a` (others refused port forwarding, 2026-10-08). Remove `SERVER_NAMES` from `env/gluetun.env` if they disappear.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
-- Change history: `CHANGELOG.md`. Planning notes: `PLANNED.md`.
+- Change history: `CHANGELOG.md`.
