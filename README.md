@@ -156,6 +156,7 @@ Do the same in both; differences in brackets as Sonarr / Radarr.
 3. **Settings → Download Clients → Remote Path Mappings**: Host `localhost`, Remote Path `/data/torrents/tv/` / `/data/torrents/movies/`, Local Path `/media/torrents/tv/` / `/media/torrents/movies/`.
 4. Quality profile used by Seerr: `HD - 720p/1080p` / `HD-1080p`.
 5. Indexers are added by Prowlarr; don't add them here.
+6. **Settings → Connect → Plex Media Server**: Host `plex` (container name, not an IP: container IPs change when containers are recreated), Port `32400`, authenticate with Plex.
 
 ### Prowlarr (`prowlarr.`)
 1. **Settings → Tags**: create `flare`.
