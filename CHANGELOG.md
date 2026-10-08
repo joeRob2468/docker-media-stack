@@ -6,6 +6,21 @@
 - `GTN_APIKEY` moved from `env/bittorrent.env` to `secrets/gluetun-apikey.secret` (+ `.example`), matching other credentials.
 - `bittorrent-compose.yml`: `gluetun-apikey` secret on `bittorrent_port_forwarder`; `command:` also exports `GTN_APIKEY` from `/run/secrets/gluetun-apikey`. Forwarder recreated, retrieves port 36775.
 - 2026-10-05 `*.bak-20261005-claude*` files in this repo already removed.
+- Books stack (see `PLANNED.md`): `books-compose.yml` (+ `include:`), `env/cwa.env`, `env/shelfmark.env`.
+  - `calibre-web-automated` → `library.${DOMAIN}` (OPDS `/opds`), library `data/media/ebooks`, ingest `data/cwa-ingest`.
+  - `shelfmark` → `books.${DOMAIN}`, CWA logins (`app.db` ro), ebooks → CWA ingest, audiobooks → `data/media/books` (hardlinked).
+  - Cloudflare DNS: CNAME `books`, `library` → `media.example.com` (DNS only).
+  - Shelfmark auth: `cwa_config` mounted ro at `/auth` (not just `app.db`); later switched to OIDC in UI and `AUTH_METHOD`/`CWA_DB_PATH` removed from env (Shelfmark persists env values to `plugins/security.json`). Local fallback admin created via `UserDB.create_user`.
+- Authentik (`authentik-compose.yml`, `env/authentik.env`): `auth.${DOMAIN}`, Postgres + server + worker, pinned 2026.8.3, no docker.sock. Secrets via `file://` (`secrets/authentik-{pg-pass,secret-key}.secret`).
+  - Plex source (UI): allowed server plex-server, "Allow friends" off.
+  - `authentik/blueprints/media-sso.yaml` (mounted `/blueprints/custom`): group `media-admins`, OIDC providers/apps for Shelfmark, CWA, Audiobookshelf (client secrets via `!File /run/secrets/authentik-<app>-oidc`), `grant_types` authorization_code + refresh_token (empty by default when created via API → "Invalid grant_type"), ABS callbacks under `/audiobookshelf/auth/openid/...`, `email-verified` scope mapping (apps only link existing users by verified email).
+  - Traefik: network alias `auth.${DOMAIN}` on `media_network` (no hairpin NAT; containers must reach Authentik by its public hostname).
+  - `env/shelfmark.env` `NO_PROXY` + `auth.example.com`.
+  - Cloudflare DNS: CNAME `auth` → `media.example.com` (DNS only).
+- `init-secrets.sh`: creates missing `secrets/*.secret` referenced by compose files (random or prompted); never overwrites.
+- `README.md`: rewritten for current stack (services, books flow, SSO, secrets, new-machine steps, operations).
+- `env/gluetun.env`: + `HTTPPROXY: on` (Shelfmark `HTTP_PROXY=http://gluetun:8888`; verified egress = VPN IP).
+- `env/gluetun.env`: + `SERVER_NAMES: Server-12612-2a,Server-12613-2a`. After recreate, Server-10961/10994 (x.x.x.x) refused PIA PF API (`10.x.0.1:19999` connection refused) → forwarder crash loop. 12612/12613 (x.x.x.x) work. Remove pin if those servers disappear.
 
 ## 2026-10-05
 

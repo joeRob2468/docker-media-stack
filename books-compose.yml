@@ -1,0 +1,86 @@
+---
+
+services:
+  calibre-web-automated:
+    # See more: https://github.com/crocodilestick/Calibre-Web-Automated
+    image: crocodilestick/calibre-web-automated:latest
+    container_name: calibre-web-automated
+    restart: always
+    env_file: ./env/cwa.env
+    volumes:
+      - cwa_config:/config
+      - cwa_ingest:/cwa-book-ingest
+      - ebooks:/calibre-library
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.library.rule=Host(`library.${DOMAIN}`)
+      - traefik.http.routers.library.entrypoints=websecure
+      - traefik.http.services.library.loadbalancer.server.port=8083
+    depends_on:
+      traefik:
+        condition: service_healthy
+        restart: true
+
+  shelfmark:
+    # See more: https://github.com/calibrain/shelfmark
+    image: ghcr.io/calibrain/shelfmark:latest
+    container_name: shelfmark
+    user: 1000:1000
+    restart: always
+    env_file: ./env/shelfmark.env
+    volumes:
+      - shelfmark:/config
+      # Same /data layout as qBittorrent, so torrent paths match and audiobook hardlinks work
+      - media_data:/data
+      # Log in with CWA accounts (AUTH_METHOD=cwa). Whole dir, not just app.db: CWA uses SQLite WAL,
+      # so recent changes (e.g. password updates) live in app.db-wal until checkpointed
+      - cwa_config:/auth:ro
+    healthcheck:
+      test: curl -sf http://localhost:8084/api/health || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.books.rule=Host(`books.${DOMAIN}`)
+      - traefik.http.routers.books.entrypoints=websecure
+      - traefik.http.services.books.loadbalancer.server.port=8084
+    depends_on:
+      traefik:
+        condition: service_healthy
+        restart: true
+      calibre-web-automated:
+        condition: service_started
+
+networks:
+  default:
+    name: media_network
+    driver: bridge
+    attachable: true
+
+volumes:
+  cwa_config: # Calibre-Web-Automated app data (app.db)
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/cwa"
+
+  cwa_ingest: # CWA ingest folder, emptied after import
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/data/cwa-ingest"
+
+  ebooks: # Calibre library
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/data/media/ebooks"
+
+  shelfmark: # Shelfmark app data.
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/shelfmark"
+
+  media_data: # Same mountpoint as arr-compose "data"; mounted at /data like qBittorrent
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/data"

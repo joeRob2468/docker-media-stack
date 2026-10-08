@@ -47,6 +47,11 @@ services:
     ports:
       - 80:80
       - 443:443
+    networks:
+      default:
+        # Containers can't reach public hostnames (no hairpin NAT); resolve these to traefik directly
+        aliases:
+          - auth.${DOMAIN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt
@@ -77,6 +82,8 @@ include:
   - arr-compose.yml
   - plex-compose.yml
   - audiobookshelf-compose.yml
+  - books-compose.yml
+  - authentik-compose.yml
   - dockmon-compose.yml
 
 networks:

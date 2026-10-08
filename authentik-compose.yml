@@ -1,0 +1,114 @@
+---
+
+secrets:
+  authentik-pg-pass:
+    file: ./secrets/authentik-pg-pass.secret
+  authentik-secret-key:
+    file: ./secrets/authentik-secret-key.secret
+  # OIDC client secrets, read by the media-sso blueprint
+  authentik-shelfmark-oidc:
+    file: ./secrets/authentik-shelfmark-oidc.secret
+  authentik-cwa-oidc:
+    file: ./secrets/authentik-cwa-oidc.secret
+  authentik-audiobookshelf-oidc:
+    file: ./secrets/authentik-audiobookshelf-oidc.secret
+
+services:
+  authentik-postgresql:
+    # See more: https://docs.goauthentik.io/install-config/install/docker-compose/
+    image: docker.io/library/postgres:16-alpine
+    container_name: authentik-postgresql
+    restart: always
+    secrets:
+      - authentik-pg-pass
+    env_file: ./env/authentik.env
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/authentik-pg-pass
+    volumes:
+      - authentik_database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  authentik-server:
+    # Pinned: authentik upgrades must go one minor version at a time
+    image: ghcr.io/goauthentik/server:2026.8.3
+    container_name: authentik-server
+    restart: always
+    command: server
+    shm_size: 512mb
+    secrets:
+      - authentik-pg-pass
+      - authentik-secret-key
+      - authentik-shelfmark-oidc
+      - authentik-cwa-oidc
+      - authentik-audiobookshelf-oidc
+    env_file: ./env/authentik.env
+    volumes:
+      - authentik_data:/data
+      - authentik_templates:/templates
+      - ./authentik/blueprints:/blueprints/custom:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.auth.rule=Host(`auth.${DOMAIN}`)
+      - traefik.http.routers.auth.entrypoints=websecure
+      - traefik.http.services.auth.loadbalancer.server.port=9000
+    depends_on:
+      authentik-postgresql:
+        condition: service_healthy
+      traefik:
+        condition: service_healthy
+        restart: true
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2026.8.3
+    container_name: authentik-worker
+    restart: always
+    command: worker
+    shm_size: 512mb
+    # No docker.sock: outposts not needed for OIDC-only use
+    secrets:
+      - authentik-pg-pass
+      - authentik-secret-key
+      - authentik-shelfmark-oidc
+      - authentik-cwa-oidc
+      - authentik-audiobookshelf-oidc
+    env_file: ./env/authentik.env
+    volumes:
+      - authentik_data:/data
+      - authentik_certs:/certs
+      - authentik_templates:/templates
+      - ./authentik/blueprints:/blueprints/custom:ro
+    depends_on:
+      authentik-postgresql:
+        condition: service_healthy
+
+networks:
+  default:
+    name: media_network
+    driver: bridge
+    attachable: true
+
+volumes:
+  authentik_database: # Authentik PostgreSQL data
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/authentik/database"
+
+  authentik_data: # Authentik media/uploads
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/authentik/data"
+
+  authentik_certs: # Authentik certificates
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/authentik/certs"
+
+  authentik_templates: # Authentik custom templates
+    driver: local-persist
+    driver_opts:
+      mountpoint: "${MEDIA_VOLUME}/docker_data/authentik/custom-templates"
