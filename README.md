@@ -144,7 +144,8 @@ Only needed on a fresh install. Values below are what the current stack uses.
 3. **Categories** (right-click in the category list → Add):
    - `tv` → `/data/torrents/tv`
    - `movies` → `/data/torrents/movies`
-   - `books` / audiobooks: created by Shelfmark when it first sends a torrent; default path is fine.
+   - `books` → `/data/torrents/books` (Shelfmark ebook torrents)
+   - `audiobooks` → `/data/torrents/audiobooks` (Shelfmark/AudioBookBay audiobook torrents)
 4. **Connection**: leave the listening port alone (the port forwarder sets it to Gluetun's forwarded port); UPnP off.
 5. **BitTorrent**: queueing on, max active downloads/uploads/torrents 4.
 6. **WebUI → Bypass authentication for clients in whitelisted IP subnets**: on, `172.18.255.250/32` (Traefik's fixed IP; Authentik already checked the user). Leave localhost bypass off.

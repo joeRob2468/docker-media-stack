@@ -15,6 +15,11 @@ secrets:
     file: ./secrets/telegram-bot-token.secret
   telegram-chat-id:
     file: ./secrets/telegram-chat-id.secret
+  # Same files as bittorrent-compose.yml's qBittorrent login
+  shelfmark-qbit-user:
+    file: ./secrets/bittorrent-user.secret
+  shelfmark-qbit-password:
+    file: ./secrets/bittorrent-password.secret
 
 services:
   calibre-web-automated:
@@ -56,6 +61,8 @@ services:
       - shelfmark-client-id
       - telegram-bot-token
       - telegram-chat-id
+      - shelfmark-qbit-user
+      - shelfmark-qbit-password
     env_file: ./env/shelfmark.env
     environment:
       TZ: ${TZ}

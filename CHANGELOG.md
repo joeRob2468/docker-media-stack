@@ -34,6 +34,7 @@
 - Single login for admin tools: *arrs `AUTH__METHOD=External` (env), Traefik fixed IP 172.18.255.250 + qBittorrent auth whitelist for it, DockMon OIDC app in blueprint (`secrets/authentik-dockmon-{client-id,oidc}.secret`; configured in DockMon UI).
 - Sonarr/Radarr Plex notification host `172.18.0.7` → `plex` (IP changed on Plex recreate, breaking library refresh after restarts/updates).
 - Authentik `media-login` flow (Plex-only identification stage, no user fields → automatic source redirect) as authentication flow for all media providers; removes the extra Authentik login page. Shelfmark request defaults → `request_book` (users request books, admin picks releases; avoids source lookups on every browse).
+- Shelfmark → qBittorrent for torrents (AudioBookBay, Prowlarr): `PROWLARR_TORRENT_CLIENT: qbittorrent`, `http://gluetun:8088`, categories `books`/`audiobooks` (created in qBittorrent with save paths under `/data/torrents`), login from the bittorrent secrets via `shelfmark/start.sh`.
 - README: connecting apps and devices; CWA default user permissions (default role 0 blocks downloads/OPDS for Plex users).
 - `README.md`: rewritten for current stack (services, books flow, SSO, secrets, new-machine steps, operations).
 - `env/gluetun.env`: + `HTTPPROXY: on` (Shelfmark `HTTP_PROXY=http://gluetun:8888`; verified egress = VPN IP).
