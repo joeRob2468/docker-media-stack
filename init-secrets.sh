@@ -35,6 +35,7 @@ declare -A HINT=(
   [plex-claim]="Plex claim token from https://account.plex.tv/claim (expires in 4 min)"
   [sonarr-api]="Sonarr API key (Settings > General)"
   [radarr-api]="Radarr API key (Settings > General)"
+  [hardcover-token]="Hardcover API token from https://hardcover.app/account/api"
 )
 
 # Subshell with pipefail off: tr gets SIGPIPE once head has enough bytes

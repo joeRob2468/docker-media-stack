@@ -1,11 +1,17 @@
 ---
 
+secrets:
+  hardcover-token:
+    file: ./secrets/hardcover-token.secret
+
 services:
   calibre-web-automated:
     # See more: https://github.com/crocodilestick/Calibre-Web-Automated
     image: crocodilestick/calibre-web-automated:latest
     container_name: calibre-web-automated
     restart: always
+    secrets:
+      - hardcover-token
     env_file: ./env/cwa.env
     volumes:
       - cwa_config:/config
