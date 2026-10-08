@@ -18,6 +18,10 @@ services:
     secrets:
       - hardcover-token
     env_file: ./env/cwa.env
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
     volumes:
       - cwa_config:/config
       - cwa_ingest:/cwa-book-ingest
@@ -36,13 +40,19 @@ services:
     # See more: https://github.com/calibrain/shelfmark
     image: ghcr.io/calibrain/shelfmark:latest
     container_name: shelfmark
-    user: 1000:1000
+    user: "${PUID}:${PGID}"
     restart: always
     secrets:
       - hardcover-token
       - aa-donator-key
       - shelfmark-oidc
     env_file: ./env/shelfmark.env
+    environment:
+      TZ: ${TZ}
+      OIDC_DISCOVERY_URL: https://auth.${DOMAIN}/application/o/shelfmark/.well-known/openid-configuration
+      CALIBRE_WEB_URL: https://library.${DOMAIN}
+      AUDIOBOOK_LIBRARY_URL: https://audiobookshelf.${DOMAIN}
+      NO_PROXY: gluetun,calibre-web-automated,auth.${DOMAIN},localhost,127.0.0.1
     # Shelfmark reads settings from env only; load the secret ones from the secret files at startup
     command: ["sh", "-c", "export HARDCOVER_API_KEY=\"$$(cat /run/secrets/hardcover-token)\" AA_DONATOR_KEY=\"$$(cat /run/secrets/aa-donator-key)\" OIDC_CLIENT_SECRET=\"$$(cat /run/secrets/shelfmark-oidc)\"; exec /app/entrypoint.sh"]
     volumes:

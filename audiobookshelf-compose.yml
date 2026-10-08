@@ -3,9 +3,11 @@ services:
   audiobookshelf:
     image: ghcr.io/advplyr/audiobookshelf:latest
     container_name: audiobookshelf
-    user: 1000:1000
+    user: "${PUID}:${PGID}"
     restart: always
     env_file: ./env/audiobookshelf.env
+    environment:
+      TZ: ${TZ}
     volumes:
       - books:/audiobooks
 #      - podcasts:/podcasts

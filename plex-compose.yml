@@ -11,6 +11,8 @@ services:
     init: true
     restart: always
     env_file: ./env/plex.env
+    environment:
+      TZ: ${TZ}
     volumes:
       - overseerr:/app/config
     healthcheck:
@@ -40,6 +42,11 @@ services:
     secrets:
       - plex-claim
     env_file: ./env/plex.env
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      ADVERTISE_IP: https://${LAN_IP}:32400/,https://plex.${DOMAIN}/
     volumes:
       - plex:/config
       - media:/media

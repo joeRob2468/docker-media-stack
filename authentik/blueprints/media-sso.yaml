@@ -16,7 +16,7 @@ entries:
       enabled: true
       client_id: <client-id>
       allowed_servers:
-        - <plex-server-id>   # plex-server
+        - !Env PLEX_SERVER_ID   # Plex server's machine identifier (.env)
       allow_friends: false
       plex_token: !File /run/secrets/authentik-plex-token
       authentication_flow: !Find [authentik_flows.flow, [slug, default-source-authentication]]
@@ -65,7 +65,7 @@ entries:
       client_secret: !File /run/secrets/authentik-shelfmark-oidc
       redirect_uris:
         - matching_mode: strict
-          url: https://books.example.com/api/auth/oidc/callback
+          url: !Format ["https://books.%s/api/auth/oidc/callback", !Env DOMAIN]
 
   - model: authentik_core.application
     identifiers:
@@ -73,7 +73,7 @@ entries:
     attrs:
       name: Shelfmark
       provider: !KeyOf provider-shelfmark
-      meta_launch_url: https://books.example.com
+      meta_launch_url: !Format ["https://books.%s", !Env DOMAIN]
 
   - model: authentik_providers_oauth2.oauth2provider
     id: provider-cwa
@@ -85,7 +85,7 @@ entries:
       client_secret: !File /run/secrets/authentik-cwa-oidc
       redirect_uris:
         - matching_mode: strict
-          url: https://library.example.com/login/generic/authorized
+          url: !Format ["https://library.%s/login/generic/authorized", !Env DOMAIN]
 
   - model: authentik_core.application
     identifiers:
@@ -93,7 +93,7 @@ entries:
     attrs:
       name: Calibre-Web-Automated
       provider: !KeyOf provider-cwa
-      meta_launch_url: https://library.example.com
+      meta_launch_url: !Format ["https://library.%s", !Env DOMAIN]
 
   - model: authentik_providers_oauth2.oauth2provider
     id: provider-audiobookshelf
@@ -105,9 +105,9 @@ entries:
       client_secret: !File /run/secrets/authentik-audiobookshelf-oidc
       redirect_uris:
         - matching_mode: strict
-          url: https://audiobookshelf.example.com/audiobookshelf/auth/openid/callback
+          url: !Format ["https://audiobookshelf.%s/audiobookshelf/auth/openid/callback", !Env DOMAIN]
         - matching_mode: strict
-          url: https://audiobookshelf.example.com/audiobookshelf/auth/openid/mobile-redirect
+          url: !Format ["https://audiobookshelf.%s/audiobookshelf/auth/openid/mobile-redirect", !Env DOMAIN]
 
   - model: authentik_core.application
     identifiers:
@@ -115,4 +115,4 @@ entries:
     attrs:
       name: Audiobookshelf
       provider: !KeyOf provider-audiobookshelf
-      meta_launch_url: https://audiobookshelf.example.com
+      meta_launch_url: !Format ["https://audiobookshelf.%s", !Env DOMAIN]

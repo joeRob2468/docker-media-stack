@@ -77,6 +77,8 @@ services:
       - openvpn_password
       - gluetun-auth-config
     env_file: ./env/gluetun.env
+    environment:
+      TZ: ${TZ}
     volumes:
       - gluetun:/gluetun
 

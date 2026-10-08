@@ -38,7 +38,7 @@ The home router has no NAT loopback: devices on the LAN can't reach the public I
 
 ## Paths
 
-Everything lives under `MEDIA_VOLUME` (`/mnt/media`): app data in `docker_data/<app>`, media and downloads in `data/`. All media and download paths are on one filesystem so hardlinks work.
+Everything lives under `MEDIA_VOLUME` (`/mnt/media`, set in `.env`): app data in `docker_data/<app>`, media and downloads in `data/`. All media and download paths are on one filesystem so hardlinks work.
 
 | Host path | qBittorrent | Sonarr/Radarr/Prowlarr/Unpackerr | Plex | Shelfmark | Audiobookshelf | CWA |
 |---|---|---|---|---|---|---|
@@ -90,7 +90,17 @@ setopt HIST_IGNORE_SPACE
    cd ~/.services/docker-media-stack
    sudo bash local_persist_install.sh
    ```
-2. `cp .env.example .env` and set `DOMAIN`, `EMAIL_ADDRESS`, `MEDIA_VOLUME`.
+2. `cp .env.example .env` and fill it in (make sure the file ends with a newline):
+
+   | Variable | Used for |
+   |---|---|
+   | `DOMAIN` | all hostnames (`<service>.${DOMAIN}`), Shelfmark/Plex URLs, Authentik blueprint |
+   | `EMAIL_ADDRESS` | Let's Encrypt account |
+   | `MEDIA_VOLUME` | root of `data/` and `docker_data/` |
+   | `TZ` | timezone for all containers (`America/Chicago`) |
+   | `PUID` / `PGID` | user/group the apps run as (1000) |
+   | `LAN_IP` | Plex `ADVERTISE_IP` |
+   | `PLEX_SERVER_ID` | Plex machine identifier allowed to log in via Authentik. A **new** Plex server gets a new ID: after Plex is set up, copy it from https://plex.tv/api/v2/resources (`clientIdentifier` of the server, needs your Plex token) and run `docker compose up -d authentik-worker` |
 3. Create folders (owned by uid 1000):
    ```
    mkdir -p $MEDIA_VOLUME/data/{torrents/{tv,movies,temp},media/{tv,movies,books,ebooks},cwa-ingest} $MEDIA_VOLUME/docker_data
@@ -216,7 +226,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 
 ## Single sign-on (Authentik)
 
-- Plex source: only accounts with access to the plex-server Plex server can log in ("Allow friends" off).
+- Plex source: only accounts with access to the Plex server `PLEX_SERVER_ID` (plex-server) can log in ("Allow friends" off).
 - `authentik/blueprints/media-sso.yaml` defines the Plex source, its login button, the `media-admins` group and the OIDC apps. Authentik reapplies it when the file changes and hourly: **edit the file, not the UI**.
 - `media-admins` members are admins in Shelfmark and CWA.
 - Emails are sent as verified so apps link existing accounts by email.

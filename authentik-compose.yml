@@ -86,6 +86,10 @@ services:
       - authentik-bootstrap-password
       - authentik-plex-token
     env_file: ./env/authentik.env
+    environment:
+      # Used by the media-sso blueprint (!Env)
+      DOMAIN: ${DOMAIN}
+      PLEX_SERVER_ID: ${PLEX_SERVER_ID}
     volumes:
       - authentik_data:/data
       - authentik_certs:/certs
