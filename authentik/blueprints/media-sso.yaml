@@ -129,7 +129,7 @@ entries:
     attrs:
       expression: |
         if request.user.username == "akadmin":
-            ak_message("Signed in to Authentik as akadmin. Sign out at auth.example.com, then use Login with Plex.")
+            ak_message("Signed in to Authentik as akadmin. Sign out of Authentik first, then use Login with Plex.")
             return False
         return True
 

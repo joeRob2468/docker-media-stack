@@ -1,10 +1,12 @@
 # Automated Media Management Setup
 
-Media server stack for example: VPN-protected downloads, *arr automation, Plex, books/audiobooks, and single sign-on with Plex accounts. Originally based on the guide at https://passthebits.com/.
+Self-hosted media server stack: VPN-protected downloads, *arr automation, Plex, books/audiobooks, and single sign-on with Plex accounts. Originally based on the guide at https://passthebits.com/.
 
 Contents: [Services](#services) · [Paths](#paths) · [Secrets](#secrets) · [Fresh install](#fresh-install) · [Restore from existing data](#restore-from-existing-data) · [Manual app setup](#manual-app-setup) · [Connecting apps](#connecting-apps-and-devices) · [Single sign-on](#single-sign-on-authentik) · [Operations](#operations)
 
 ## Services
+
+Hostnames in this README use `example.com` as a placeholder; replace it with your `DOMAIN` from `.env`.
 
 | Service | URL | Compose file | Notes |
 |---|---|---|---|
@@ -17,7 +19,7 @@ Contents: [Services](#services) · [Paths](#paths) · [Secrets](#secrets) · [Fr
 | 🔍 Prowlarr | `prowlarr.` | `arr-compose.yml` | In Gluetun's network |
 | 🧩 Byparr | — | `arr-compose.yml` | FlareSolverr-compatible Cloudflare solver for Prowlarr, in Gluetun's network |
 | 📦 Unpackerr | — | `arr-compose.yml` | Extracts completed downloads for Sonarr/Radarr (env-only config) |
-| 📡 Plex | `plex.` | `plex-compose.yml` | Server name "plex-server" |
+| 📡 Plex | `plex.` | `plex-compose.yml` | |
 | 📝 Seerr | `overseerr.` | `plex-compose.yml` | Movie/TV requests, Plex login |
 | 🎧 Audiobookshelf | `audiobookshelf.` | `audiobookshelf-compose.yml` | Login via Authentik |
 | 📚 Shelfmark | `books.` | `books-compose.yml` | Ebook/audiobook search and download. Fully configured from env. Login via Authentik |
@@ -34,7 +36,7 @@ Services "in Gluetun's network" share one network namespace: they reach each oth
 | A | `media` | public IP of the server |
 | CNAME | `audiobookshelf`, `auth`, `bittorrent`, `books`, `dockmon`, `library`, `overseerr`, `plex`, `prowlarr`, `radarr`, `sonarr` | `media.example.com` |
 
-The home router has no NAT loopback: devices on the LAN can't reach the public IP. Point the hostnames at the server's LAN IP (`192.168.1.10`) locally, via the Windows hosts file or a router/Pi-hole DNS override (the latter also covers phones). Containers reach `auth.${DOMAIN}` through a Traefik network alias, so server-side login works regardless.
+The home router has no NAT loopback: devices on the LAN can't reach the public IP. Point the hostnames at the server's LAN IP (`LAN_IP` in `.env`, e.g. `192.168.1.10`) locally, via the Windows hosts file or a router/Pi-hole DNS override (the latter also covers phones). Containers reach `auth.${DOMAIN}` through a Traefik network alias, so server-side login works regardless.
 
 ## Paths
 
@@ -269,7 +271,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 
 ## Single sign-on (Authentik)
 
-- Plex source: only accounts with access to the Plex server `PLEX_SERVER_ID` (plex-server) can log in ("Allow friends" off).
+- Plex source: only accounts with access to the Plex server `PLEX_SERVER_ID` can log in ("Allow friends" off).
 - `authentik/blueprints/media-sso.yaml` defines the Plex source, its login button, the `media-admins` group and the OIDC apps. Authentik reapplies it when the file changes and hourly: **edit the file, not the UI**.
 - `media-admins` members are admins in Shelfmark and CWA.
 - Emails are sent as verified so apps link existing accounts by email.
