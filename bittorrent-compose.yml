@@ -33,6 +33,7 @@ services:
       - traefik.http.routers.bittorrent.rule=Host(`bittorrent.${DOMAIN}`)
       - traefik.http.routers.bittorrent.entrypoints=websecure
       - traefik.http.services.bittorrent.loadbalancer.server.port=8088
+      - traefik.http.routers.bittorrent.middlewares=authentik@docker
     depends_on:
       gluetun:
         condition: service_healthy

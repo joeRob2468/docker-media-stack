@@ -257,8 +257,8 @@ Web apps, no native client. On a phone open `https://books.example.com` / `https
 ### Plex
 Official Plex apps on any device, signed in with the Plex account the library is shared with. Plexamp for music if libraries are added later.
 
-### Admin apps (*arrs, qBittorrent)
-For admins only: mobile apps such as nzb360 (Android) or Ruddarr (iOS) connect to `https://sonarr.example.com` etc. with the API key from `secrets/<app>-api.secret`. qBittorrent: `https://bittorrent.example.com` with the WebUI login.
+### Admin apps (*arrs, qBittorrent, DockMon)
+Browser: log in with Plex (must be in `media-admins`), then the app's own login. Mobile apps such as nzb360 (Android) or Ruddarr (iOS) connect to `https://sonarr.example.com` etc. with the API key from `secrets/<app>-api.secret`; `/api` isn't behind Authentik. qBittorrent and DockMon have no API exception, so their mobile apps won't work from outside.
 
 ## Books flow
 
@@ -276,6 +276,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - `media-admins` members are admins in Shelfmark and CWA.
 - Emails are sent as verified so apps link existing accounts by email.
 - Local logins remain in each app as a fallback.
+- **Admin tools** (Sonarr, Radarr, Prowlarr, qBittorrent, DockMon) sit behind Authentik forward auth (`authentik@docker` Traefik middleware, "Admin tools" proxy provider in domain mode on the embedded outpost). Only `media-admins` and `authentik Admins` get through; everyone else is denied. Sonarr/Radarr/Prowlarr `/api` bypasses it and still requires the API key. The apps' own logins stay as a second layer.
 - "Login with Plex" reuses an existing Authentik session. If the browser is signed in to Authentik as `akadmin`, the apps would get `akadmin`; a `deny-akadmin` policy (blueprint) blocks that with a message. Sign out at `auth.` first, or do Authentik admin work in a separate browser profile.
 
 ## Operations

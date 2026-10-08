@@ -24,6 +24,7 @@ services:
       - traefik.http.routers.dockmon.rule=Host(`dockmon.${DOMAIN}`)
       - traefik.http.routers.dockmon.entrypoints=websecure
       - traefik.http.services.dockmon.loadbalancer.server.port=80
+      - traefik.http.routers.dockmon.middlewares=authentik@docker
     depends_on:
       traefik:
         condition: service_healthy

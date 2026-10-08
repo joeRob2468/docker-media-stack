@@ -156,3 +156,48 @@ entries:
     attrs:
       order: 0
       enabled: true
+
+  # Admin tools (Sonarr, Radarr, Prowlarr, qBittorrent, DockMon): Traefik forward auth via the
+  # embedded outpost, one login for all *.DOMAIN hosts. Only media-admins and authentik Admins.
+  - model: authentik_providers_proxy.proxyprovider
+    id: provider-admin-tools
+    identifiers:
+      name: Admin tools
+    attrs:
+      mode: forward_domain
+      external_host: !Format ["https://auth.%s", !Env DOMAIN]
+      cookie_domain: !Env DOMAIN
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+
+  - model: authentik_core.application
+    id: app-admin-tools
+    identifiers:
+      slug: admin-tools
+    attrs:
+      name: Admin tools
+      provider: !KeyOf provider-admin-tools
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf app-admin-tools
+      group: !Find [authentik_core.group, [name, media-admins]]
+    attrs:
+      order: 0
+      enabled: true
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf app-admin-tools
+      group: !Find [authentik_core.group, [name, authentik Admins]]
+    attrs:
+      order: 1
+      enabled: true
+
+  - model: authentik_outposts.outpost
+    identifiers:
+      managed: goauthentik.io/outposts/embedded
+    attrs:
+      providers:
+        - !KeyOf provider-admin-tools

@@ -37,6 +37,11 @@ services:
       - traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)
       - traefik.http.routers.sonarr.entrypoints=websecure
       - traefik.http.services.sonarr.loadbalancer.server.port=8989
+      - traefik.http.routers.sonarr.middlewares=authentik@docker
+      # /api stays reachable for API-key clients (phone apps); it rejects requests without a key
+      - traefik.http.routers.sonarr-api.rule=Host(`sonarr.${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.sonarr-api.entrypoints=websecure
+      - traefik.http.routers.sonarr-api.service=sonarr
     depends_on:
       gluetun:
         condition: service_healthy
@@ -77,6 +82,11 @@ services:
       - traefik.http.routers.radarr.rule=Host(`radarr.${DOMAIN}`)
       - traefik.http.routers.radarr.entrypoints=websecure
       - traefik.http.services.radarr.loadbalancer.server.port=7878
+      - traefik.http.routers.radarr.middlewares=authentik@docker
+      # /api stays reachable for API-key clients (phone apps); it rejects requests without a key
+      - traefik.http.routers.radarr-api.rule=Host(`radarr.${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.radarr-api.entrypoints=websecure
+      - traefik.http.routers.radarr-api.service=radarr
     depends_on:
       gluetun:
         condition: service_healthy
@@ -145,6 +155,11 @@ services:
       - traefik.http.routers.prowlarr.rule=Host(`prowlarr.${DOMAIN}`)
       - traefik.http.routers.prowlarr.entrypoints=websecure
       - traefik.http.services.prowlarr.loadbalancer.server.port=9696
+      - traefik.http.routers.prowlarr.middlewares=authentik@docker
+      # /api stays reachable for API-key clients (phone apps); it rejects requests without a key
+      - traefik.http.routers.prowlarr-api.rule=Host(`prowlarr.${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.prowlarr-api.entrypoints=websecure
+      - traefik.http.routers.prowlarr-api.service=prowlarr
     depends_on:
       gluetun:
         condition: service_healthy
