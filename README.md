@@ -48,6 +48,7 @@ Everything lives under `MEDIA_VOLUME` (`/mnt/media`, set in `.env`): app data in
 | `data/media/tv`, `data/media/movies` | | `/media/media/tv`, `/media/media/movies` | `/media/tv`, `/media/movies` | | | |
 | `data/media/books` (audiobooks) | | | | `/data/media/books` | `/audiobooks` | |
 | `data/media/ebooks` (Calibre library) | | | | `/data/media/ebooks` | | `/calibre-library` |
+| `data/cwa-staging` | | | | `/data/cwa-staging` | | |
 | `data/cwa-ingest` | | | | `/data/cwa-ingest` | | `/cwa-book-ingest` |
 
 qBittorrent and the *arrs see the torrent folder under different paths (`/data/torrents` vs `/media/torrents`). Sonarr and Radarr bridge this with **remote path mappings** (see below); without them imports fail with "path does not exist".
@@ -219,6 +220,8 @@ UserDB('/config/users.db').create_user(username=u, password_hash=generate_passwo
 ```
 Keep Shelfmark's IRC sources disabled: they don't use the VPN proxy.
 
+Metadata: Shelfmark only matches books on Hardcover; it doesn't write metadata into files. `shelfmark/postprocess.py` (Shelfmark's custom script hook, JSON payload) does: ebooks land in `data/cwa-staging`, the script writes title, author, series and number into EPUBs and moves them into `data/cwa-ingest`; for audiobooks it writes `metadata.opf` (series number, year) for Audiobookshelf. Non-EPUB ebooks are moved unchanged. Note: Shelfmark's `DESTINATION` setting is set via the env var `INGEST_DIR`.
+
 Notifications: new requests, finished and failed downloads go to Telegram (same bot/chat as Seerr), built by `shelfmark/start.sh` from the Telegram secrets. Users can add their own routes under their Shelfmark settings → Notifications.
 
 ### DockMon (`dockmon.`)
@@ -276,8 +279,8 @@ Browser: log in with Plex (must be in `media-admins`); no second login. Mobile a
 ```
 Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──▶ VPN
           ├─ torrents ──▶ qBittorrent (already in VPN)
-          ├─ ebooks ──▶ data/cwa-ingest ──▶ CWA ──▶ data/media/ebooks ──OPDS──▶ Moon+ Reader
-          └─ audiobooks ──▶ data/media/books (hardlinked) ──▶ Audiobookshelf
+          ├─ ebooks ──▶ data/cwa-staging ──postprocess.py──▶ data/cwa-ingest ──▶ CWA ──▶ data/media/ebooks ──OPDS──▶ Moon+ Reader
+          └─ audiobooks ──▶ data/media/books (hardlinked, + metadata.opf) ──▶ Audiobookshelf
 ```
 
 ## Single sign-on (Authentik)

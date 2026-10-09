@@ -75,6 +75,7 @@ services:
     volumes:
       - shelfmark:/config
       - ./shelfmark/start.sh:/start.sh:ro
+      - ./shelfmark/postprocess.py:/scripts/postprocess.py:ro
       # Same /data layout as qBittorrent, so torrent paths match and audiobook hardlinks work
       - media_data:/data
     healthcheck:
