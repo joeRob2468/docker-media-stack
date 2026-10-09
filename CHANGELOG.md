@@ -36,6 +36,7 @@
 - Authentik `media-login` flow (Plex-only identification stage, no user fields → automatic source redirect) as authentication flow for all media providers; removes the extra Authentik login page. Shelfmark request defaults → `request_book` (users request books, admin picks releases; avoids source lookups on every browse).
 - Shelfmark → qBittorrent for torrents (AudioBookBay, Prowlarr): `PROWLARR_TORRENT_CLIENT: qbittorrent`, `http://gluetun:8088`, categories `books`/`audiobooks` (created in qBittorrent with save paths under `/data/torrents`), login from the bittorrent secrets via `shelfmark/start.sh`.
 - Shelfmark `PROWLARR_TORRENT_ACTION: remove_and_delete` (was `keep`), matching Sonarr/Radarr Remove Completed: torrents and their files are removed after import.
+- Shelfmark audiobook naming `{Author}/{Series/}{Title}/{Title}{ - Part }{PartNumber}` (default template gave every file the same name → `_1…_n` collision suffixes).
 - README: connecting apps and devices; CWA default user permissions (default role 0 blocks downloads/OPDS for Plex users).
 - `README.md`: rewritten for current stack (services, books flow, SSO, secrets, new-machine steps, operations).
 - `env/gluetun.env`: + `HTTPPROXY: on` (Shelfmark `HTTP_PROXY=http://gluetun:8888`; verified egress = VPN IP).

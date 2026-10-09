@@ -147,6 +147,7 @@ Only needed on a fresh install. Values below are what the current stack uses.
    - `books` → `/data/torrents/books` (Shelfmark ebook torrents)
    - `audiobooks` → `/data/torrents/audiobooks` (Shelfmark/AudioBookBay audiobook torrents)
    - Seeding: share limit ratio `0`, action Stop. Sonarr/Radarr ("Remove Completed") and Shelfmark (`PROWLARR_TORRENT_ACTION: remove_and_delete`) remove torrents and their files after import, so `/data/torrents` only holds in-progress downloads.
+   - Shelfmark only removes torrents it started since its last restart (it keeps the torrent ↔ download link in memory). After restarting Shelfmark mid-download, remove that torrent in qBittorrent by hand once it's imported.
 4. **Connection**: leave the listening port alone (the port forwarder sets it to Gluetun's forwarded port); UPnP off.
 5. **BitTorrent**: queueing on, max active downloads/uploads/torrents 4.
 6. **WebUI → Bypass authentication for clients in whitelisted IP subnets**: on, `172.18.255.250/32` (Traefik's fixed IP; Authentik already checked the user). Leave localhost bypass off.
