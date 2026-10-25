@@ -11,6 +11,7 @@ const jwt = require('/app/node_modules/jsonwebtoken')
 const sqlite3 = require('/app/node_modules/sqlite3')
 
 const USERNAME = 'shelfmark'
+const KEY_NAME = 'Shelfmark library check'
 const BASE = `http://localhost:${process.env.PORT || 80}`
 const DB_PATH = `${process.env.CONFIG_PATH || '/config'}/absdatabase.sqlite`
 
@@ -53,12 +54,18 @@ async function main() {
         username: USERNAME,
         password: crypto.randomBytes(24).toString('base64url'),
         type: 'user',
+        isActive: true,
         permissions: { download: false, accessAllLibraries: true, accessAllTags: true, accessExplicitContent: true }
       })
       user = created.user
+    } else if (!user.isActive) {
+      // An inactive user's API keys are rejected
+      await api(admin, 'PATCH', `/api/users/${user.id}`, { isActive: true })
     }
 
-    const { apiKey } = await api(admin, 'POST', '/api/api-keys', { name: 'Shelfmark library check', userId: user.id, isActive: true })
+    // A new key replaces the old one (the secret file is only rewritten when it was lost)
+    await run('DELETE FROM apiKeys WHERE name = ? AND userId = ?', [KEY_NAME, user.id])
+    const { apiKey } = await api(admin, 'POST', '/api/api-keys', { name: KEY_NAME, userId: user.id, isActive: true })
     process.stdout.write(apiKey.apiKey)
   } finally {
     await run('DELETE FROM apiKeys WHERE id = ?', [tempId])
