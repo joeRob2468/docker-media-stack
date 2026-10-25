@@ -9,6 +9,8 @@
 - Labels `com.dockmon.update.policy`: `allow` on traefik and authentik-postgresql (DockMon's built-in proxy/database patterns held them back with "Update requires confirmation"), `warn` on gluetun (stays manual).
 - `shelfmark/postprocess.py`: when Shelfmark passes no series (books picked from search results), look it up on Hardcover (one request, book id from Shelfmark's `users.db`), so `metadata.opf` and EPUBs get the series. Folder layout unchanged.
 - Audiobookshelf metadata cleanup (`audiobookshelf/clean-metadata.js`, shared admin-key helper `admin-key.js`): applied to 52 books (titles, narrators-as-authors, series numbers, initials, dates; gaps filled once from Audible). A Game of Gods → Hades X Persephone #6. Gap filling now uses Hardcover. Nightly rules-only run by the new `ofelia` scheduler container (`scheduler-compose.yml`; job labels on `audiobookshelf`, scripts mounted at `/scripts`).
+- Audiobookshelf series: A Trade of Blood moved from "Ana and Din Mysteries" into "Shadow of the Leviathan" #3 (Goodreads' name; the empty series was removed).
+- Audiobookshelf years: first-publication years for 16 books (were mostly audio release years), where Hardcover and Open Library agree or after checking the release date. Dramatized adaptations keep their own release years. Shelfmark imports already get Hardcover's year.
 - Removed `env/watchtower.env` (Watchtower was replaced by DockMon).
 
 ## 2026-10-08
