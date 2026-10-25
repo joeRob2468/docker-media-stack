@@ -149,7 +149,7 @@ Only needed on a fresh install. Values below are what the current stack uses.
    - `movies` → `/data/torrents/movies`
    - `books` → `/data/torrents/books` (Shelfmark ebook torrents)
    - `audiobooks` → `/data/torrents/audiobooks` (Shelfmark/AudioBookBay audiobook torrents)
-   - Seeding: share limit ratio `0`, action Stop. Sonarr/Radarr ("Remove Completed") and Shelfmark (`PROWLARR_TORRENT_ACTION: remove_and_delete` on Shelfmark > 1.4.0; until then `HOOK_REMOVE_TORRENT` in `shelfmark/postprocess.py`) remove torrents and their files after import, so `/data/torrents` only holds in-progress downloads.
+   - Seeding: share limit ratio `0`, action Stop. Sonarr/Radarr ("Remove Completed") and Shelfmark (`PROWLARR_TORRENT_ACTION: remove_and_delete`) remove torrents and their files after import, so `/data/torrents` only holds in-progress downloads.
    - Shelfmark only removes torrents it started since its last restart (it keeps the torrent ↔ download link in memory). After restarting Shelfmark mid-download, remove that torrent in qBittorrent by hand once it's imported.
 4. **Connection**: leave the listening port alone (the port forwarder sets it to Gluetun's forwarded port); UPnP off.
 5. **BitTorrent**: queueing on, max active downloads/uploads/torrents 4.

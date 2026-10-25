@@ -10,6 +10,7 @@
 - `scheduler-compose.yml` (+ `include:`): `ofelia` scheduler. `audiobookshelf-compose.yml`: scripts mounted at `/scripts`, nightly `clean-metadata` job labels (rules only).
 - Labels `com.dockmon.update.policy`: `allow` on traefik and authentik-postgresql (DockMon's built-in proxy/database patterns held them back), `warn` on gluetun (stays manual).
 - `shelfmark/postprocess.py`: when Shelfmark passes no series (books picked from search results), look it up on Hardcover (one request, book id from Shelfmark's `users.db`).
+- Removed the `HOOK_REMOVE_TORRENT` stopgap from `shelfmark/postprocess.py` and `env/shelfmark.env`: Shelfmark ≥ 1.5 handles `PROWLARR_TORRENT_ACTION: remove_and_delete` itself.
 - Removed `env/watchtower.env` (Watchtower was replaced by DockMon).
 
 ## 2026-10-08

@@ -12,11 +12,6 @@ Other formats are moved unchanged. If editing fails, the file is still moved as-
 
 Audiobooks: write metadata.opf into the book folder; Audiobookshelf reads it (incl. series
 number, which the folder name doesn't carry). Existing metadata.opf files are left alone.
-
-Torrents (HOOK_REMOVE_TORRENT=true): after import, remove the torrent and its files from
-qBittorrent, like Sonarr/Radarr "Remove Completed". Stopgap until Shelfmark > 1.4.0 ships
-PROWLARR_TORRENT_ACTION=remove_and_delete. Audiobooks are hardlinked into the library and
-ebooks are copied to staging before this runs, so the library keeps its copy.
 """
 import json
 import os
@@ -24,7 +19,6 @@ import re
 import sqlite3
 import sys
 import tempfile
-import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -215,57 +209,6 @@ def fill_series(task: dict, meta: dict) -> None:
         log(f"series lookup failed ({e}); continuing without series")
 
 
-def read_secret(env: str, secret: str) -> str:
-    value = os.environ.get(env)
-    if value:
-        return value
-    return Path("/run/secrets", secret).read_text().strip()
-
-
-def remove_torrent(payload: dict) -> None:
-    """Remove the imported torrent and its files from qBittorrent."""
-    if os.environ.get("HOOK_REMOVE_TORRENT", "").lower() not in ("1", "true", "yes", "on"):
-        return
-    source = payload.get("task", {}).get("original_download_path")
-    if not source or not source.startswith("/data/torrents/"):
-        return
-    source = os.path.normpath(source)
-    base = os.environ.get("QBITTORRENT_URL", "http://gluetun:8088").rstrip("/")
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
-
-    def call(endpoint: str, data: dict | None = None) -> str:
-        body = urllib.parse.urlencode(data).encode() if data is not None else None
-        req = urllib.request.Request(f"{base}/api/v2/{endpoint}", data=body, headers={"Referer": base})
-        with opener.open(req, timeout=15) as resp:
-            return resp.read().decode()
-
-    login = call("auth/login", {
-        "username": read_secret("QBITTORRENT_USERNAME", "shelfmark-qbit-user"),
-        "password": read_secret("QBITTORRENT_PASSWORD", "shelfmark-qbit-password"),
-    })
-    if login.strip() == "Fails.":  # success is "Ok." (older) or an empty 204 (qBittorrent 5)
-        raise RuntimeError("qBittorrent login failed")
-    categories = {os.environ.get("QBITTORRENT_CATEGORY", "books"),
-                  os.environ.get("QBITTORRENT_CATEGORY_AUDIOBOOK", "audiobooks")}
-    for torrent in json.loads(call("torrents/info")):
-        if torrent.get("category") not in categories or torrent.get("progress", 0) < 1:
-            continue
-        content = os.path.normpath(torrent.get("content_path") or
-                                   os.path.join(torrent.get("save_path", ""), torrent.get("name", "")))
-        if content == source:
-            call("torrents/delete", {"hashes": torrent["hash"], "deleteFiles": "true"})
-            log(f"removed torrent and files: {torrent.get('name')!r}")
-            return
-    log(f"no completed torrent found for {source}; nothing removed")
-
-
-def cleanup_torrent(payload: dict) -> None:
-    try:
-        remove_torrent(payload)
-    except Exception as e:  # never block the import over cleanup
-        log(f"torrent cleanup failed ({e}); torrent left in qBittorrent")
-
-
 def main() -> int:
     payload = json.load(sys.stdin)
     task = payload.get("task", {})
@@ -286,7 +229,6 @@ def main() -> int:
         if paths:
             folder = Path(os.path.commonpath([str(p.parent) for p in paths]))
             write_audiobook_opf(folder, meta)
-        cleanup_torrent(payload)
         return 0
 
     for path in paths:
@@ -300,7 +242,6 @@ def main() -> int:
                 log(f"could not edit {path.name} ({e}); importing unchanged")
         dest = move_to_ingest(path)
         log(f"moved to {dest}")
-    cleanup_torrent(payload)
     return 0
 
 
