@@ -198,6 +198,15 @@ Manual:
    - Allowed mobile redirect URIs: `audiobookshelf://oauth`; Group claim empty
    - Keep password authentication on as a fallback. Restart the container if it asks.
 3. `./init-secrets.sh` creates the `shelfmark` user and its API key for Shelfmark's library check; then `docker restart shelfmark`.
+4. Nightly metadata cleanup (cron on the host, see Operations).
+
+Metadata cleanup: `audiobookshelf/clean-metadata.js` tidies titles ("(Unabridged)", "Series, Book N" and number prefixes, using the folder name), series numbers from `N - Title` folders, narrators listed as authors, initials ("N.K." → "N. K.") and full dates in the year field. Changes go through the API (kept in Audiobookshelf's `metadata.json`, which wins over file tags); nothing on disk is renamed. Run it from the repo:
+```
+cat audiobookshelf/admin-key.js audiobookshelf/clean-metadata.js | docker exec -i audiobookshelf node -            # dry run: prints planned changes
+cat audiobookshelf/admin-key.js audiobookshelf/clean-metadata.js | docker exec -i audiobookshelf node - --apply    # apply
+# fill missing series, numbers and years from Hardcover (2 requests per book with gaps; add --compare for a report only)
+HARDCOVER_API_KEY="$(cat secrets/hardcover-token.secret)" sh -c 'cat audiobookshelf/admin-key.js audiobookshelf/clean-metadata.js | docker exec -i -e HARDCOVER_API_KEY audiobookshelf node - --hardcover'
+```
 
 ### Calibre-Web-Automated (`library.`)
 1. Log in with `admin` / `admin123` and change the password immediately.
@@ -309,4 +318,8 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - Gluetun is pinned to PIA servers `Server-12612-2a` / `Server-12613-2a` (others refused port forwarding, 2026-10-08). Remove `SERVER_NAMES` from `env/gluetun.env` if they disappear.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
 - Files mounted one by one (`shelfmark/start.sh`, `shelfmark/postprocess.py`) keep pointing at the old file after `git pull`; `docker restart shelfmark` picks up the new one.
+- Nightly Audiobookshelf metadata cleanup (rules only, no external calls), in the host's crontab:
+  ```
+  30 3 * * * $HOME/.services/docker-media-stack/audiobookshelf/nightly-clean.sh >> $HOME/.services/docker-media-stack/logs/clean-metadata.log 2>&1
+  ```
 - Change history: `CHANGELOG.md`.

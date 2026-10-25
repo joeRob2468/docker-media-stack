@@ -8,6 +8,7 @@
 - DockMon: auto-update by default on; turned on for shelfmark, calibre-web-automated and authentik-postgresql (were off; a recreated container keeps its DockMon setting, matched by name). Updated DockMon 2.3.2 → 2.5.0.
 - Labels `com.dockmon.update.policy`: `allow` on traefik and authentik-postgresql (DockMon's built-in proxy/database patterns held them back with "Update requires confirmation"), `warn` on gluetun (stays manual).
 - `shelfmark/postprocess.py`: when Shelfmark passes no series (books picked from search results), look it up on Hardcover (one request, book id from Shelfmark's `users.db`), so `metadata.opf` and EPUBs get the series. Folder layout unchanged.
+- Audiobookshelf metadata cleanup (`audiobookshelf/clean-metadata.js`, shared admin-key helper `admin-key.js`): applied to 52 books (titles, narrators-as-authors, series numbers, initials, dates; gaps filled once from Audible). A Game of Gods → Hades X Persephone #6. Gap filling now uses Hardcover. Nightly rules-only run via host cron (`audiobookshelf/nightly-clean.sh`, log in `logs/`).
 - Removed `env/watchtower.env` (Watchtower was replaced by DockMon).
 
 ## 2026-10-08

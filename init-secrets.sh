@@ -46,8 +46,8 @@ derive() {
 }
 DERIVED=" gluetun-auth-config "
 
-# Issued by a running app: name -> "container script" (script runs inside the container
-# and prints the secret). Until the app is up and set up, an empty placeholder is written so
+# Issued by a running app: name -> "container script" (script runs inside the container,
+# after admin-key.js from the same folder, and prints the secret). Until the app is up and set up, an empty placeholder is written so
 # compose can start; rerun this script afterwards to fill it in.
 declare -A FROM_APP=(
   [audiobookshelf-token]="audiobookshelf audiobookshelf/create-api-key.js"
@@ -107,7 +107,7 @@ for name in $names; do
   elif [ -n "${FROM_APP[$name]:-}" ]; then
     read -r container script <<< "${FROM_APP[$name]}"
     if [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null)" = true ] \
-      && content=$(docker exec -i "$container" node - < "$script"); then
+      && content=$(cat "$(dirname "$script")/admin-key.js" "$script" | docker exec -i "$container" node -); then
       (umask 077; printf '%s' "$content" > "$file")
       echo "created   $name (in $container)"
     else

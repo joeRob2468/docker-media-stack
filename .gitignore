@@ -1,2 +1,4 @@
 .env
 *.secret
+logs/
+__pycache__/
