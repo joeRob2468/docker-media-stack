@@ -236,7 +236,7 @@ Create the admin account on first visit (keep it as fallback). Then **Settings �
 - Group mapping: `media-admins` → DockMon's administrator group
 - Enable, and turn on **SSO default** so the login page goes straight to Authentik.
 
-Updates: **Settings → auto-update by default on**, so recreated containers keep auto-update. Compose labels `com.dockmon.update.policy` override DockMon's built-in patterns: `allow` on traefik and authentik-postgresql (otherwise held back as proxy/database), `warn` on gluetun (auto-update skips it; see Operations). Authentik images are pinned, so they never update by themselves.
+Updates: **Settings → auto-update by default on**, so new containers get auto-update (recreated ones keep their setting). Compose labels `com.dockmon.update.policy` override DockMon's built-in patterns: `allow` on traefik and authentik-postgresql (otherwise held back as proxy/database), `warn` on gluetun (auto-update skips it; see Operations). Authentik images are pinned, so they never update by themselves.
 
 ## Connecting apps and devices
 

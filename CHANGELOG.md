@@ -5,7 +5,7 @@
 ### Changes
 - Shelfmark 1.5.1: Audiobookshelf library check on (`LIBRARY_CHECK_AUDIOBOOKSHELF_ENABLED`, `AUDIOBOOKSHELF_URL` in `env/shelfmark.env`; token exported by `shelfmark/start.sh`). Audiobook results now get the In library badge like ebooks.
 - `secrets/audiobookshelf-token.secret`: API key of a new read-only Audiobookshelf user `shelfmark` (no downloads). `init-secrets.sh` creates it inside the running container via `audiobookshelf/create-api-key.js`, using a temporary admin key that it deletes again.
-- DockMon: auto-update by default on; turned on for shelfmark and calibre-web-automated (both were off after being recreated). Updated DockMon 2.3.2 → 2.5.0.
+- DockMon: auto-update by default on; turned on for shelfmark, calibre-web-automated and authentik-postgresql (were off; a recreated container keeps its DockMon setting, matched by name). Updated DockMon 2.3.2 → 2.5.0.
 - Labels `com.dockmon.update.policy`: `allow` on traefik and authentik-postgresql (DockMon's built-in proxy/database patterns held them back with "Update requires confirmation"), `warn` on gluetun (stays manual).
 - Removed `env/watchtower.env` (Watchtower was replaced by DockMon).
 
