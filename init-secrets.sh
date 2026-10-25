@@ -46,6 +46,13 @@ derive() {
 }
 DERIVED=" gluetun-auth-config "
 
+# Issued by a running app: name -> "container script" (script runs inside the container
+# and prints the secret). Until the app is up and set up, an empty placeholder is written so
+# compose can start; rerun this script afterwards to fill it in.
+declare -A FROM_APP=(
+  [audiobookshelf-token]="audiobookshelf audiobookshelf/create-api-key.js"
+)
+
 # Everything else comes from outside (VPN account, Cloudflare, Plex, external services).
 declare -A HINT=(
   [openvpn_user]="PIA username"
@@ -85,6 +92,7 @@ for name in $names; do
   if [ "$CHECK" = 1 ]; then
     if [ -n "${GENERATE[$name]:-}" ]; then echo "missing   $name (will generate)"
     elif [[ "$DERIVED" == *" $name "* ]]; then echo "missing   $name (will build from other secrets)"
+    elif [ -n "${FROM_APP[$name]:-}" ]; then echo "missing   $name (will create in ${FROM_APP[$name]%% *})"
     else echo "missing   $name (will prompt: ${HINT[$name]:-value})"; fi
     continue
   fi
@@ -95,6 +103,16 @@ for name in $names; do
       echo "built     $name"
     else
       echo "skipped   $name (inputs missing)"
+    fi
+  elif [ -n "${FROM_APP[$name]:-}" ]; then
+    read -r container script <<< "${FROM_APP[$name]}"
+    if [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null)" = true ] \
+      && content=$(docker exec -i "$container" node - < "$script"); then
+      (umask 077; printf '%s' "$content" > "$file")
+      echo "created   $name (in $container)"
+    else
+      (umask 077; : > "$file")
+      echo "skipped   $name (empty placeholder; set up $container, then rerun and restart its users)"
     fi
   elif [ -n "${GENERATE[$name]:-}" ]; then
     # No trailing newline: linuxserver FILE__ env loading keeps it as part of the value

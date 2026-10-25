@@ -20,6 +20,9 @@ secrets:
     file: ./secrets/bittorrent-user.secret
   shelfmark-qbit-password:
     file: ./secrets/bittorrent-password.secret
+  # API key of Audiobookshelf's read-only "shelfmark" user (created by init-secrets.sh)
+  audiobookshelf-token:
+    file: ./secrets/audiobookshelf-token.secret
 
 services:
   calibre-web-automated:
@@ -63,6 +66,7 @@ services:
       - telegram-chat-id
       - shelfmark-qbit-user
       - shelfmark-qbit-password
+      - audiobookshelf-token
     env_file: ./env/shelfmark.env
     environment:
       TZ: ${TZ}

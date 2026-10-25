@@ -66,6 +66,7 @@ All credentials are files in `secrets/*.secret` (gitignored), passed as Docker s
 |---|---|---|
 | Generated | `authentik-pg-pass`, `authentik-secret-key`, `authentik-bootstrap-password`, `authentik-{shelfmark,cwa,audiobookshelf}-oidc`, `authentik-{shelfmark,cwa,audiobookshelf,plex}-client-id`, `gluetun-apikey`, `sonarr-api`, `radarr-api`, `prowlarr-api` | random |
 | Built | `gluetun-auth-config` | Gluetun control-server auth file containing `gluetun-apikey` |
+| Created in app | `audiobookshelf-token` | API key of a read-only `shelfmark` user, created inside the running Audiobookshelf (`audiobookshelf/create-api-key.js`). Empty placeholder until Audiobookshelf is set up |
 | Prompted | `openvpn_user`, `openvpn_password` | PIA account |
 | | `cloudflare-token`, `cloudflare-email` | Cloudflare API token with Zone.DNS edit |
 | | `bittorrent-user`, `bittorrent-password` | qBittorrent WebUI login you choose (set the same in qBittorrent) |
@@ -196,6 +197,7 @@ Manual:
    - Button text `Login with Plex`, Auto Register on, Match existing users by **email**
    - Allowed mobile redirect URIs: `audiobookshelf://oauth`; Group claim empty
    - Keep password authentication on as a fallback. Restart the container if it asks.
+3. `./init-secrets.sh` creates the `shelfmark` user and its API key for Shelfmark's library check; then `docker restart shelfmark`.
 
 ### Calibre-Web-Automated (`library.`)
 1. Log in with `admin` / `admin123` and change the password immediately.
@@ -222,6 +224,8 @@ Keep Shelfmark's IRC sources disabled: they don't use the VPN proxy.
 
 Metadata: Shelfmark only matches books on Hardcover; it doesn't write metadata into files. `shelfmark/postprocess.py` (Shelfmark's custom script hook, JSON payload) does: ebooks land in `data/cwa-staging`, the script writes title, author, series and number into EPUBs and moves them into `data/cwa-ingest`; for audiobooks it writes `metadata.opf` (series number, year) for Audiobookshelf. Non-EPUB ebooks are moved unchanged. Note: Shelfmark's `DESTINATION` setting is set via the env var `INGEST_DIR`.
 
+Library check: search results already in the library get an **In library** badge; ebooks are checked against CWA's `metadata.db`, audiobooks against Audiobookshelf (`secrets/audiobookshelf-token.secret`). Requests aren't blocked.
+
 Notifications: new requests, finished and failed downloads go to Telegram (same bot/chat as Seerr), built by `shelfmark/start.sh` from the Telegram secrets. Users can add their own routes under their Shelfmark settings → Notifications.
 
 ### DockMon (`dockmon.`)
@@ -231,7 +235,8 @@ Create the admin account on first visit (keep it as fallback). Then **Settings �
 - Scopes `openid profile email`, groups claim `groups`
 - Group mapping: `media-admins` → DockMon's administrator group
 - Enable, and turn on **SSO default** so the login page goes straight to Authentik.
- Turn auto-update **off for gluetun** (see Operations); leave it on for the rest.
+
+Updates: **Settings → auto-update by default on**, so recreated containers keep auto-update. Compose labels `com.dockmon.update.policy` override DockMon's built-in patterns: `allow` on traefik and authentik-postgresql (otherwise held back as proxy/database), `warn` on gluetun (auto-update skips it; see Operations). Authentik images are pinned, so they never update by themselves.
 
 ## Connecting apps and devices
 
@@ -300,7 +305,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
   ```
   docker compose up -d --force-recreate gluetun sonarr radarr prowlarr bittorrent byparr bittorrent_port_forwarder
   ```
-- DockMon auto-update is off for Gluetun (updating it races its dependents); update it manually, alone, with the command above.
+- DockMon auto-update skips Gluetun (`com.dockmon.update.policy=warn` label; updating it races its dependents); update it manually, alone, with the command above.
 - Gluetun is pinned to PIA servers `Server-12612-2a` / `Server-12613-2a` (others refused port forwarding, 2026-10-08). Remove `SERVER_NAMES` from `env/gluetun.env` if they disappear.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
 - Change history: `CHANGELOG.md`.
