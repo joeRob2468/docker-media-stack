@@ -7,6 +7,7 @@
 - `secrets/audiobookshelf-token.secret`: API key of a new read-only Audiobookshelf user `shelfmark` (no downloads). `init-secrets.sh` creates it inside the running container via `audiobookshelf/create-api-key.js`, using a temporary admin key that it deletes again.
 - DockMon: auto-update by default on; turned on for shelfmark, calibre-web-automated and authentik-postgresql (were off; a recreated container keeps its DockMon setting, matched by name). Updated DockMon 2.3.2 → 2.5.0.
 - Labels `com.dockmon.update.policy`: `allow` on traefik and authentik-postgresql (DockMon's built-in proxy/database patterns held them back with "Update requires confirmation"), `warn` on gluetun (stays manual).
+- `shelfmark/postprocess.py`: when Shelfmark passes no series (books picked from search results), look it up on Hardcover (one request, book id from Shelfmark's `users.db`), so `metadata.opf` and EPUBs get the series. Folder layout unchanged.
 - Removed `env/watchtower.env` (Watchtower was replaced by DockMon).
 
 ## 2026-10-08

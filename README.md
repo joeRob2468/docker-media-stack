@@ -222,7 +222,7 @@ UserDB('/config/users.db').create_user(username=u, password_hash=generate_passwo
 ```
 Keep Shelfmark's IRC sources disabled: they don't use the VPN proxy.
 
-Metadata: Shelfmark only matches books on Hardcover; it doesn't write metadata into files. `shelfmark/postprocess.py` (Shelfmark's custom script hook, JSON payload) does: ebooks land in `data/cwa-staging`, the script writes title, author, series and number into EPUBs and moves them into `data/cwa-ingest`; for audiobooks it writes `metadata.opf` (series number, year) for Audiobookshelf. Non-EPUB ebooks are moved unchanged. Note: Shelfmark's `DESTINATION` setting is set via the env var `INGEST_DIR`.
+Metadata: Shelfmark only matches books on Hardcover; it doesn't write metadata into files. `shelfmark/postprocess.py` (Shelfmark's custom script hook, JSON payload) does: ebooks land in `data/cwa-staging`, the script writes title, author, series and number into EPUBs and moves them into `data/cwa-ingest`; for audiobooks it writes `metadata.opf` (series number, year) for Audiobookshelf. Books picked from search results come without a series (Hardcover search doesn't return one); the script then looks it up once on Hardcover by the book's id from Shelfmark's `users.db`. Non-EPUB ebooks are moved unchanged. Note: Shelfmark's `DESTINATION` setting is set via the env var `INGEST_DIR`.
 
 Library check: search results already in the library get an **In library** badge; ebooks are checked against CWA's `metadata.db`, audiobooks against Audiobookshelf (`secrets/audiobookshelf-token.secret`). Requests aren't blocked.
 

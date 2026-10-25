@@ -2,6 +2,9 @@
 """Shelfmark post-download hook (CUSTOM_SCRIPT, JSON payload on stdin).
 
 Shelfmark passes the Hardcover metadata it matched (title, author, series, position, year).
+A book picked from search results comes without its series (Hardcover search doesn't
+return one); then the series is looked up once on Hardcover, by the book id Shelfmark
+recorded for the download (one request per such import, well inside the API limits).
 
 Ebooks: Shelfmark saves them to a staging folder. Write that metadata into EPUB files,
 then move every file into CWA's ingest folder, so CWA imports clean title/author/series.
@@ -18,6 +21,7 @@ ebooks are copied to staging before this runs, so the library keeps its copy.
 import json
 import os
 import re
+import sqlite3
 import sys
 import tempfile
 import urllib.parse
@@ -28,6 +32,8 @@ from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape
 
 INGEST = Path(os.environ.get("CWA_INGEST_DIR", "/data/cwa-ingest"))
+USERS_DB = Path("/config/users.db")  # Shelfmark's download history and requests
+HARDCOVER_API_URL = "https://api.hardcover.app/v1/graphql"
 
 OPF_NS = "http://www.idpf.org/2007/opf"
 DC_NS = "http://purl.org/dc/elements/1.1/"
@@ -146,6 +152,69 @@ def write_audiobook_opf(folder: Path, meta: dict) -> None:
     log(f"wrote {target}")
 
 
+def hardcover_book_id(task_id: str | None) -> int | None:
+    """Hardcover id of the book a download was for, from Shelfmark's records (not in the payload).
+
+    A requested download has it in the request's book data; any download from a Hardcover
+    search has it in its cover URL (/api/covers/hardcover_<id>?...).
+    """
+    if not task_id or not USERS_DB.exists():
+        return None
+    db = sqlite3.connect(f"file:{USERS_DB}?mode=ro", uri=True)
+    try:
+        row = db.execute(
+            "SELECT h.preview, r.book_data FROM download_history h"
+            " LEFT JOIN download_requests r ON r.id = h.request_id"
+            " WHERE h.task_id = ? ORDER BY h.id DESC LIMIT 1",
+            (task_id,),
+        ).fetchone()
+    finally:
+        db.close()
+    if not row:
+        return None
+    preview, book_data = row
+    book = json.loads(book_data) if book_data else {}
+    if book.get("provider") == "hardcover" and str(book.get("provider_id", "")).isdigit():
+        return int(book["provider_id"])
+    match = re.search(r"/api/covers/hardcover_(\d+)", preview or "")
+    return int(match.group(1)) if match else None
+
+
+def hardcover_series(book_id: int) -> tuple[str | None, float | None]:
+    """The book's featured series and position: one request, one top-level field."""
+    key = re.sub(r"^Bearer\s+", "", os.environ.get("HARDCOVER_API_KEY", "").strip())
+    if not key:
+        return None, None
+    query = ("query($id: Int!) { books(where: {id: {_eq: $id}}, limit: 1)"
+             " { featured_book_series { position series { name } } } }")
+    req = urllib.request.Request(
+        HARDCOVER_API_URL,
+        data=json.dumps({"query": query, "variables": {"id": book_id}}).encode(),
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
+                 "User-Agent": "docker-media-stack shelfmark postprocess (series lookup)"},
+    )
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        books = json.load(resp).get("data", {}).get("books") or []
+    featured = (books[0].get("featured_book_series") or {}) if books else {}
+    return (featured.get("series") or {}).get("name"), featured.get("position")
+
+
+def fill_series(task: dict, meta: dict) -> None:
+    """Add the series from Hardcover when Shelfmark passed none; never blocks the import."""
+    if meta["series"]:
+        return
+    try:
+        book_id = hardcover_book_id(task.get("task_id"))
+        if book_id is None:
+            return
+        series, position = hardcover_series(book_id)
+        if series:
+            meta["series"], meta["index"] = series, fmt_index(position)
+            log(f"series from Hardcover book {book_id}: {series!r} #{meta['index']}")
+    except Exception as e:
+        log(f"series lookup failed ({e}); continuing without series")
+
+
 def read_secret(env: str, secret: str) -> str:
     value = os.environ.get(env)
     if value:
@@ -210,6 +279,7 @@ def main() -> int:
         "subtitle": task.get("subtitle"),
         "language": task.get("language"),
     }
+    fill_series(task, meta)
     log(f"{task.get('content_type')}: {meta['title']!r} by {meta['authors']} series={meta['series']!r} #{meta['index']}")
 
     if task.get("content_type") == "audiobook":
