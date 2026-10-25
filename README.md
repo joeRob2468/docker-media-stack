@@ -26,6 +26,7 @@ Hostnames in this README use `example.com` as a placeholder; replace it with you
 | 📖 Calibre-Web-Automated | `library.` | `books-compose.yml` | Ebook library, OPDS at `/opds`. Login via Authentik |
 | 🔑 Authentik | `auth.` | `authentik-compose.yml` | Single sign-on with Plex accounts |
 | 🚢 DockMon | `dockmon.` | `dockmon-compose.yml` | Container monitoring and image updates |
+| ⏰ Ofelia | – | `scheduler-compose.yml` | Scheduled jobs inside other containers (labels on the target service) |
 
 Services "in Gluetun's network" share one network namespace: they reach each other (and qBittorrent) at `localhost`, and other containers reach them at `gluetun:<port>`.
 
@@ -198,7 +199,7 @@ Manual:
    - Allowed mobile redirect URIs: `audiobookshelf://oauth`; Group claim empty
    - Keep password authentication on as a fallback. Restart the container if it asks.
 3. `./init-secrets.sh` creates the `shelfmark` user and its API key for Shelfmark's library check; then `docker restart shelfmark`.
-4. Nightly metadata cleanup (cron on the host, see Operations).
+4. Nightly metadata cleanup runs by itself (Ofelia, see Operations).
 
 Metadata cleanup: `audiobookshelf/clean-metadata.js` tidies titles ("(Unabridged)", "Series, Book N" and number prefixes, using the folder name), series numbers from `N - Title` folders, narrators listed as authors, initials ("N.K." → "N. K.") and full dates in the year field. Changes go through the API (kept in Audiobookshelf's `metadata.json`, which wins over file tags); nothing on disk is renamed. Run it from the repo:
 ```
@@ -318,8 +319,5 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - Gluetun is pinned to PIA servers `Server-12612-2a` / `Server-12613-2a` (others refused port forwarding, 2026-10-08). Remove `SERVER_NAMES` from `env/gluetun.env` if they disappear.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
 - Files mounted one by one (`shelfmark/start.sh`, `shelfmark/postprocess.py`) keep pointing at the old file after `git pull`; `docker restart shelfmark` picks up the new one.
-- Nightly Audiobookshelf metadata cleanup (rules only, no external calls), in the host's crontab:
-  ```
-  30 3 * * * $HOME/.services/docker-media-stack/audiobookshelf/nightly-clean.sh >> $HOME/.services/docker-media-stack/logs/clean-metadata.log 2>&1
-  ```
+- Scheduled jobs: the `ofelia` container (`scheduler-compose.yml`) runs commands inside other containers on a schedule set by labels on the target service. Current job: Audiobookshelf metadata cleanup at 03:30, rules only, no external calls (labels in `audiobookshelf-compose.yml`). Output: `docker logs ofelia`.
 - Change history: `CHANGELOG.md`.

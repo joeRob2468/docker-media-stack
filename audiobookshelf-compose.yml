@@ -13,11 +13,18 @@ services:
 #      - podcasts:/podcasts
       - config:/config
       - metadata:/metadata
+      # Maintenance scripts (audiobookshelf/*.js), run inside this container
+      - ./audiobookshelf:/scripts:ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.${DOMAIN}`)
       - traefik.http.routers.audiobookshelf.entrypoints=websecure
       - traefik.http.services.audiobookshelf.loadbalancer.server.port=13378
+      # Nightly metadata cleanup, rules only (scheduler-compose.yml runs it)
+      - ofelia.enabled=true
+      - ofelia.job-exec.clean-metadata.schedule=0 30 3 * * *
+      - ofelia.job-exec.clean-metadata.command=sh -c "cat /scripts/admin-key.js /scripts/clean-metadata.js | node - --apply"
+      - ofelia.job-exec.clean-metadata.no-overlap=true
     depends_on:
       traefik:
         condition: service_healthy

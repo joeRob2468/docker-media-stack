@@ -1,0 +1,21 @@
+---
+services:
+  ofelia:
+    # See more: https://github.com/netresearch/ofelia
+    # Runs scheduled jobs inside other containers. Jobs are labels on the target service
+    # (ofelia.job-exec.<name>.schedule/command), so each schedule lives next to its service.
+    image: ghcr.io/netresearch/ofelia:latest
+    container_name: ofelia
+    restart: always
+    # Labels only, no config file
+    command: daemon
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  default:
+    name: media_network
+    driver: bridge
+    attachable: true

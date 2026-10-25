@@ -98,6 +98,7 @@ include:
   - books-compose.yml
   - authentik-compose.yml
   - dockmon-compose.yml
+  - scheduler-compose.yml
 
 networks:
   default:
