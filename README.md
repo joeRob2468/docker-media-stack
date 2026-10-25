@@ -308,4 +308,5 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - DockMon auto-update skips Gluetun (`com.dockmon.update.policy=warn` label; updating it races its dependents); update it manually, alone, with the command above.
 - Gluetun is pinned to PIA servers `Server-12612-2a` / `Server-12613-2a` (others refused port forwarding, 2026-10-08). Remove `SERVER_NAMES` from `env/gluetun.env` if they disappear.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
+- Files mounted one by one (`shelfmark/start.sh`, `shelfmark/postprocess.py`) keep pointing at the old file after `git pull`; `docker restart shelfmark` picks up the new one.
 - Change history: `CHANGELOG.md`.
