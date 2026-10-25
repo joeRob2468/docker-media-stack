@@ -59,6 +59,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt
+    labels:
+      # DockMon holds proxies back from auto-update by default; let traefik update like the rest
+      - com.dockmon.update.policy=allow
     healthcheck:
       test: netstat -ptan | grep -E "443.*LISTEN" || exit 1
       interval: 10s
@@ -83,6 +86,9 @@ services:
       TZ: ${TZ}
     volumes:
       - gluetun:/gluetun
+    labels:
+      # DockMon skips auto-update for "warn"; updating gluetun races its dependents, so update it manually
+      - com.dockmon.update.policy=warn
 
 include:
   - bittorrent-compose.yml

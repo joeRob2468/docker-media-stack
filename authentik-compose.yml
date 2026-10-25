@@ -45,6 +45,9 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/authentik-pg-pass
     volumes:
       - authentik_database:/var/lib/postgresql/data
+    labels:
+      # DockMon holds databases back from auto-update by default; the 16-alpine tag only brings 16.x patches
+      - com.dockmon.update.policy=allow
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 30s
