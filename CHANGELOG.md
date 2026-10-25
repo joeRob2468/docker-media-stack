@@ -3,14 +3,13 @@
 ## 2026-10-25
 
 ### Changes
-- Shelfmark 1.5.1: Audiobookshelf library check on (`LIBRARY_CHECK_AUDIOBOOKSHELF_ENABLED`, `AUDIOBOOKSHELF_URL` in `env/shelfmark.env`; token exported by `shelfmark/start.sh`). Audiobook results now get the In library badge like ebooks.
-- `secrets/audiobookshelf-token.secret`: API key of a new read-only Audiobookshelf user `shelfmark` (no downloads). `init-secrets.sh` creates it inside the running container via `audiobookshelf/create-api-key.js`, using a temporary admin key that it deletes again.
-- DockMon: auto-update by default on; turned on for shelfmark, calibre-web-automated and authentik-postgresql (were off; a recreated container keeps its DockMon setting, matched by name). Updated DockMon 2.3.2 → 2.5.0.
-- Labels `com.dockmon.update.policy`: `allow` on traefik and authentik-postgresql (DockMon's built-in proxy/database patterns held them back with "Update requires confirmation"), `warn` on gluetun (stays manual).
-- `shelfmark/postprocess.py`: when Shelfmark passes no series (books picked from search results), look it up on Hardcover (one request, book id from Shelfmark's `users.db`), so `metadata.opf` and EPUBs get the series. Folder layout unchanged.
-- Audiobookshelf metadata cleanup (`audiobookshelf/clean-metadata.js`, shared admin-key helper `admin-key.js`): applied to 52 books (titles, narrators-as-authors, series numbers, initials, dates; gaps filled once from Audible). A Game of Gods → Hades X Persephone #6. Gap filling now uses Hardcover. Nightly rules-only run by the new `ofelia` scheduler container (`scheduler-compose.yml`; job labels on `audiobookshelf`, scripts mounted at `/scripts`).
-- Audiobookshelf series: A Trade of Blood moved from "Ana and Din Mysteries" into "Shadow of the Leviathan" #3 (Goodreads' name; the empty series was removed).
-- Audiobookshelf years: first-publication years for 16 books (were mostly audio release years), where Hardcover and Open Library agree or after checking the release date. Dramatized adaptations keep their own release years. Shelfmark imports already get Hardcover's year.
+- `env/shelfmark.env`: Audiobookshelf library check on (`LIBRARY_CHECK_AUDIOBOOKSHELF_ENABLED`, `AUDIOBOOKSHELF_URL`; needs Shelfmark ≥ 1.5.1); `shelfmark/start.sh` exports `AUDIOBOOKSHELF_TOKEN`.
+- `secrets/audiobookshelf-token.secret` (+ `.example`): API key of a read-only Audiobookshelf user `shelfmark`. `init-secrets.sh` creates it inside the running container via `audiobookshelf/create-api-key.js` (empty placeholder until Audiobookshelf is set up).
+- `audiobookshelf/admin-key.js`: shared helper for the scripts in that folder (temporary admin key, deleted afterwards).
+- `audiobookshelf/clean-metadata.js`: audiobook metadata cleanup (titles, series numbers, narrators listed as authors, initials, dates); `--hardcover` fills missing series, numbers and years from Hardcover.
+- `scheduler-compose.yml` (+ `include:`): `ofelia` scheduler. `audiobookshelf-compose.yml`: scripts mounted at `/scripts`, nightly `clean-metadata` job labels (rules only).
+- Labels `com.dockmon.update.policy`: `allow` on traefik and authentik-postgresql (DockMon's built-in proxy/database patterns held them back), `warn` on gluetun (stays manual).
+- `shelfmark/postprocess.py`: when Shelfmark passes no series (books picked from search results), look it up on Hardcover (one request, book id from Shelfmark's `users.db`).
 - Removed `env/watchtower.env` (Watchtower was replaced by DockMon).
 
 ## 2026-10-08
