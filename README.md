@@ -116,7 +116,7 @@ setopt HIST_IGNORE_SPACE
 6. Start: `docker compose pull && docker compose up -d`. First start of Authentik takes several minutes (database migrations).
 7. Do the [manual app setup](#manual-app-setup) below, in order.
 
-Already automated, nothing to click: Traefik and certificates, Gluetun (incl. control-server auth and HTTP proxy), port forwarder, Unpackerr, Shelfmark (all settings), Authentik admin account, Plex login source, admin group and the three OIDC apps (blueprint), Sonarr/Radarr/Prowlarr API keys.
+Already automated, nothing to click: Traefik and certificates, Gluetun (incl. control-server auth and HTTP proxy), port forwarder, Unpackerr, Shelfmark (all settings), Authentik admin account, Plex login source, admin group and the four OIDC apps (blueprint), Sonarr/Radarr/Prowlarr API keys, nightly Audiobookshelf metadata cleanup (Ofelia). Shelfmark's Audiobookshelf key needs one rerun of `./init-secrets.sh` after Audiobookshelf's setup.
 
 ## Restore from existing data
 
@@ -316,7 +316,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
   docker compose up -d --force-recreate gluetun sonarr radarr prowlarr bittorrent byparr bittorrent_port_forwarder
   ```
 - DockMon auto-update skips Gluetun (`com.dockmon.update.policy=warn` label; updating it races its dependents); update it manually, alone, with the command above.
-- Gluetun is pinned to PIA servers `Server-12612-2a` / `Server-12613-2a` (others refused port forwarding, 2026-10-08). Remove `SERVER_NAMES` from `env/gluetun.env` if they disappear.
+- Gluetun picks PIA servers by region (`SERVER_REGIONS` in `env/gluetun.env`: CA Ontario, CA Montreal; all passed a port-forwarding test 2026-10-14). Don't pin `SERVER_NAMES`: PIA renames servers, and Gluetun won't start if a pinned name leaves its list.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
 - Files mounted one by one (`shelfmark/start.sh`, `shelfmark/postprocess.py`) keep pointing at the old file after `git pull`; `docker restart shelfmark` picks up the new one.
 - Scheduled jobs: the `ofelia` container (`scheduler-compose.yml`) runs commands inside other containers on a schedule set by labels on the target service. Current job: Audiobookshelf metadata cleanup at 03:30, rules only, no external calls (labels in `audiobookshelf-compose.yml`). Output: `docker logs ofelia`.
