@@ -13,6 +13,15 @@ services:
       TZ: ${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    # job-run jobs start a fresh container, so their labels live here, not on a target service.
+    # Docker doesn't restart unhealthy containers itself; see the bittorrent healthcheck.
+    labels:
+      - ofelia.enabled=true
+      - ofelia.job-run.restart-unhealthy-bittorrent.schedule=@every 5m
+      - ofelia.job-run.restart-unhealthy-bittorrent.image=docker:28-cli
+      - ofelia.job-run.restart-unhealthy-bittorrent.volume=/var/run/docker.sock:/var/run/docker.sock
+      - ofelia.job-run.restart-unhealthy-bittorrent.command=sh -c "docker ps -q --filter name=^bittorrent$$ --filter health=unhealthy | xargs -r docker restart"
+      - ofelia.job-run.restart-unhealthy-bittorrent.no-overlap=true
 
 networks:
   default:

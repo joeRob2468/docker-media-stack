@@ -16,6 +16,9 @@ services:
     restart: always
     network_mode: service:gluetun
     env_file: ./env/bittorrent.env
+    secrets:
+      - bittorrent-user
+      - bittorrent-password
     environment:
       TZ: ${TZ}
       PUID: ${PUID}
@@ -23,11 +26,16 @@ services:
     volumes:
       - bittorrent:/config
       - torrent:/data/torrents
+    # libtorrent keeps its DHT/tracker sockets on the old tunnel after gluetun reconnects
+    # (DHT drops to 0, every torrent stalls at 0 peers) until qBittorrent restarts. Unhealthy
+    # when DHT has no nodes; ofelia (scheduler-compose.yml) restarts it once unhealthy.
     healthcheck:
-      test: curl -f http://localhost:8088 || exit 1
-      interval: 10s
-      timeout: 3s
-      start_period: 60s
+      test: ["CMD-SHELL", "c=/tmp/healthcheck.cookie; curl -sf -c $$c --data-urlencode \"username=$$(cat /run/secrets/bittorrent-user)\" --data-urlencode \"password=$$(cat /run/secrets/bittorrent-password)\" http://localhost:8088/api/v2/auth/login >/dev/null && n=$$(curl -sf -b $$c http://localhost:8088/api/v2/transfer/info | jq .dht_nodes); curl -s -b $$c -X POST http://localhost:8088/api/v2/auth/logout >/dev/null; rm -f $$c; [ \"$${n:-0}\" -gt 0 ]"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+      start_interval: 5s
     labels:
       - traefik.enable=true
       - traefik.http.routers.bittorrent.rule=Host(`bittorrent.${DOMAIN}`)

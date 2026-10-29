@@ -116,7 +116,7 @@ setopt HIST_IGNORE_SPACE
 6. Start: `docker compose pull && docker compose up -d`. First start of Authentik takes several minutes (database migrations).
 7. Do the [manual app setup](#manual-app-setup) below, in order.
 
-Already automated, nothing to click: Traefik and certificates, Gluetun (incl. control-server auth and HTTP proxy), port forwarder, Unpackerr, Shelfmark (all settings), Authentik admin account, Plex login source, admin group and the four OIDC apps (blueprint), Sonarr/Radarr/Prowlarr API keys, nightly Audiobookshelf metadata cleanup (Ofelia). Shelfmark's Audiobookshelf key needs one rerun of `./init-secrets.sh` after Audiobookshelf's setup.
+Already automated, nothing to click: Traefik and certificates, Gluetun (incl. control-server auth and HTTP proxy), port forwarder, Unpackerr, Shelfmark (all settings), Authentik admin account, Plex login source, admin group and the four OIDC apps (blueprint), Sonarr/Radarr/Prowlarr API keys, nightly Audiobookshelf metadata cleanup and qBittorrent restart after VPN reconnects (Ofelia). Shelfmark's Audiobookshelf key needs one rerun of `./init-secrets.sh` after Audiobookshelf's setup.
 
 ## Restore from existing data
 
@@ -319,5 +319,8 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
 - Gluetun picks PIA servers by region (`SERVER_REGIONS` in `env/gluetun.env`: CA Ontario, CA Montreal; all passed a port-forwarding test 2026-10-14). Don't pin `SERVER_NAMES`: PIA renames servers, and Gluetun won't start if a pinned name leaves its list.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
 - Files mounted one by one (`shelfmark/start.sh`, `shelfmark/postprocess.py`) keep pointing at the old file after `git pull`; `docker restart shelfmark` picks up the new one.
-- Scheduled jobs: the `ofelia` container (`scheduler-compose.yml`) runs commands inside other containers on a schedule set by labels on the target service. Current job: Audiobookshelf metadata cleanup at 03:30, rules only, no external calls (labels in `audiobookshelf-compose.yml`). Output: `docker logs ofelia`.
+- Scheduled jobs: the `ofelia` container (`scheduler-compose.yml`) runs commands inside other containers on a schedule set by labels on the target service. Current jobs (output: `docker logs ofelia`):
+  - Audiobookshelf metadata cleanup at 03:30, rules only, no external calls (labels in `audiobookshelf-compose.yml`).
+  - qBittorrent restart when unhealthy, checked every 5 min (labels on `ofelia` itself, since it starts a `docker:cli` container).
+- qBittorrent stalls after Gluetun reconnects to a new server (PIA `ping-restart` timeouts, about weekly): libtorrent keeps its DHT and tracker sockets on the old tunnel, DHT drops to 0 nodes and every torrent shows 0 peers. Its healthcheck fails while DHT has no nodes (5 checks, 1 min apart) and the Ofelia job restarts it, so it recovers within about 10 min. Keep DHT enabled in qBittorrent, or the check fails forever. Manual fix: `docker restart bittorrent`.
 - Change history: `CHANGELOG.md`.
