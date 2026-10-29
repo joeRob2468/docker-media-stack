@@ -315,12 +315,13 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
   ```
   docker compose up -d --force-recreate gluetun sonarr radarr prowlarr bittorrent byparr bittorrent_port_forwarder
   ```
+- Updating one service in Gluetun's network: `docker compose up -d --no-deps <service>`. Without `--no-deps`, Compose also recreates Gluetun whenever its config or a newer pulled image differs, leaving the other Gluetun-network containers without internet (fix with the command above).
 - DockMon auto-update skips Gluetun (`com.dockmon.update.policy=warn` label; updating it races its dependents); update it manually, alone, with the command above.
 - Gluetun picks PIA servers by region (`SERVER_REGIONS` in `env/gluetun.env`: CA Ontario, CA Montreal; all passed a port-forwarding test 2026-10-14). Don't pin `SERVER_NAMES`: PIA renames servers, and Gluetun won't start if a pinned name leaves its list.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
 - Files mounted one by one (`shelfmark/start.sh`, `shelfmark/postprocess.py`) keep pointing at the old file after `git pull`; `docker restart shelfmark` picks up the new one.
 - Scheduled jobs: the `ofelia` container (`scheduler-compose.yml`) runs commands inside other containers on a schedule set by labels on the target service. Current jobs (output: `docker logs ofelia`):
   - Audiobookshelf metadata cleanup at 03:30, rules only, no external calls (labels in `audiobookshelf-compose.yml`).
-  - qBittorrent restart when unhealthy, checked every 5 min (labels on `ofelia` itself, since it starts a `docker:cli` container).
+  - qBittorrent restart when unhealthy, checked every 5 min. Defined in `ofelia/config.ini`, not labels: it mounts the Docker socket, and Ofelia drops label jobs with host mounts.
 - qBittorrent stalls after Gluetun reconnects to a new server (PIA `ping-restart` timeouts, about weekly): libtorrent keeps its DHT and tracker sockets on the old tunnel, DHT drops to 0 nodes and every torrent shows 0 peers. Its healthcheck fails while DHT has no nodes (5 checks, 1 min apart) and the Ofelia job restarts it, so it recovers within about 10 min. Keep DHT enabled in qBittorrent, or the check fails forever. Manual fix: `docker restart bittorrent`.
 - Change history: `CHANGELOG.md`.

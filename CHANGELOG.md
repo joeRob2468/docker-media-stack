@@ -4,7 +4,8 @@
 
 ### Changes
 - `bittorrent-compose.yml`: `bittorrent` healthcheck logs in to the WebUI API (`bittorrent-user`/`bittorrent-password` secrets now on the service) and fails while DHT has 0 nodes. Interval 60s, 5 retries, `start_interval` 5s.
-- `scheduler-compose.yml`: Ofelia `job-run` `restart-unhealthy-bittorrent` (every 5 min, `docker:28-cli`) restarts `bittorrent` when unhealthy. Fixes torrents stalling at 0 peers after Gluetun reconnects to another PIA server.
+- `ofelia/config.ini` (mounted by `scheduler-compose.yml` at `/etc/ofelia/config.ini`): `job-run` `restart-unhealthy-bittorrent` (every 5 min, `docker:28-cli`) restarts `bittorrent` when unhealthy. Fixes torrents stalling at 0 peers after Gluetun reconnects to another PIA server. In the INI because Ofelia drops label jobs that mount the Docker socket.
+- README: deploy single Gluetun-network services with `--no-deps`. A plain `up -d bittorrent ofelia` recreated Gluetun (newer image already pulled) and cut Sonarr/Radarr/Prowlarr/Byparr off until the group was recreated together.
 
 ## 2026-10-25
 
