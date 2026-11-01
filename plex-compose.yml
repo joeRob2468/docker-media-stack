@@ -36,7 +36,7 @@ services:
 
   plex:
     # See more: https://docs.linuxserver.io/images/docker-plex/
-    image: lscr.io/linuxserver/plex:latest
+    image: ghcr.io/linuxserver/plex:latest
     container_name: plex
     restart: always
     secrets:

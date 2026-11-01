@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-01
+
+### Changes
+- `plex-compose.yml`, `arr-compose.yml`, `bittorrent-compose.yml`: linuxserver images (plex, sonarr, radarr, prowlarr, qbittorrent) pull from `ghcr.io/linuxserver/*` instead of `lscr.io/linuxserver/*`. lscr.io returned `toomanyrequests` during DockMon's nightly run, so checks and pulls for these images kept failing and no auto-update landed; other registries were not limited.
+
 ## 2026-10-28
 
 ### Changes

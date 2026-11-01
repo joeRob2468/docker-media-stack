@@ -11,7 +11,7 @@ secrets:
 services:
   bittorrent:
     # See more: https://docs.linuxserver.io/images/docker-qbittorrent
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: ghcr.io/linuxserver/qbittorrent:latest
     container_name: bittorrent
     restart: always
     network_mode: service:gluetun
