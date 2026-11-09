@@ -173,7 +173,7 @@ Do the same in both; differences in brackets as Sonarr / Radarr.
 ### Plex (`plex.`)
 1. Claimed automatically from `secrets/plex-claim.secret` on first start.
 2. Libraries: **Movies** → `/media/movies`, **TV Shows** → `/media/tv`.
-3. Share libraries with friends as usual. Anyone with access to the server can log in to the book apps (see SSO).
+4. Share libraries with friends as usual. Anyone with access to the server can log in to the book apps (see SSO).
 
 ### Seerr (`overseerr.`)
 1. Sign in with Plex; server `plex`, port `32400`, no SSL; enable Movies and TV Shows.
