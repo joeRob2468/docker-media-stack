@@ -70,7 +70,8 @@ services:
 
   gluetun:
     # See more: https://github.com/qdm12/gluetun-wiki
-    image: qmcgaw/gluetun
+    # Stable v3 releases ("latest" is built from every commit on main)
+    image: qmcgaw/gluetun:v3
     container_name: gluetun
     restart: always
     cap_add:
@@ -87,7 +88,8 @@ services:
     volumes:
       - gluetun:/gluetun
     labels:
-      # DockMon skips auto-update for "warn"; updating gluetun races its dependents, so update it manually
+      # DockMon skips auto-update for "warn": updating gluetun alone cuts off its dependents. The
+      # punchwizard-gluetun-update timer (punchwizard-infra) updates the whole group weekly, with rollback.
       - com.dockmon.update.policy=warn
 
 include:

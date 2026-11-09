@@ -3,6 +3,7 @@
 ## 2026-11-09
 
 ### Changes
+- `docker-compose.yml`: Gluetun pinned to `qmcgaw/gluetun:v3` (stable releases; untagged meant `latest`, a build of every commit). Updated weekly as a group, with rollback, by punchwizard-infra's `punchwizard-gluetun-update` timer instead of by hand.
 - `plex-compose.yml`: dropped `ADVERTISE_IP`. It's a `plexinc/pms-docker` setting (first run only); the linuxserver image ignores it. Plex's advertised addresses are the "Custom server access URLs" setting (`customConnections` in Preferences.xml), currently `https://plex.punchwizard.com`. No change in behaviour.
 
 ## 2026-11-01

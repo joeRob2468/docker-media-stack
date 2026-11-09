@@ -317,7 +317,7 @@ Shelfmark ──AA / libgen / bypasser──▶ gluetun:8888 HTTP proxy ──�
   docker compose up -d --force-recreate gluetun sonarr radarr prowlarr bittorrent byparr bittorrent_port_forwarder
   ```
 - Updating one service in Gluetun's network: `docker compose up -d --no-deps <service>`. Without `--no-deps`, Compose also recreates Gluetun whenever its config or a newer pulled image differs, leaving the other Gluetun-network containers without internet (fix with the command above).
-- DockMon auto-update skips Gluetun (`com.dockmon.update.policy=warn` label; updating it races its dependents); update it manually, alone, with the command above.
+- Gluetun is pinned to stable `v3` releases and updated by the server, not DockMon (`com.dockmon.update.policy=warn`; updating it alone cuts off its dependents). A weekly job from punchwizard-infra (`punchwizard-gluetun-update.timer`, Sundays 05:30) pulls `v3`, recreates the group with the command above, checks the VPN, the forwarded port and Sonarr's internet, and rolls back if any fail. The result shows on the server's login message. Run it now: `sudo systemctl start punchwizard-gluetun-update`.
 - Gluetun picks PIA servers by region (`SERVER_REGIONS` in `env/gluetun.env`: CA Ontario, CA Montreal; all passed a port-forwarding test 2026-10-14). Don't pin `SERVER_NAMES`: PIA renames servers, and Gluetun won't start if a pinned name leaves its list.
 - Authentik is pinned to a version tag; upgrade one minor version at a time.
 - Files mounted one by one (`shelfmark/start.sh`, `shelfmark/postprocess.py`) keep pointing at the old file after `git pull`; `docker restart shelfmark` picks up the new one.
