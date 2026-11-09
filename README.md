@@ -172,7 +172,8 @@ Do the same in both; differences in brackets as Sonarr / Radarr.
 
 ### Plex (`plex.`)
 1. Claimed automatically from `secrets/plex-claim.secret` on first start.
-2. Libraries: **Movies** → `/media/movies`, **TV Shows** → `/media/tv`.
+2. **Settings → Network** (show advanced): Custom server access URLs `https://plex.<DOMAIN>`, LAN Networks your LAN subnet (`192.168.1.0/24`). Plex isn't published on a host port and Remote Access stays off, so this URL is how every client finds it: without it the server shows as unavailable. (LAN Networks makes LAN clients count as local: Plex reads their address from Traefik's `X-Forwarded-For`.)
+3. Libraries: **Movies** → `/media/movies`, **TV Shows** → `/media/tv`.
 4. Share libraries with friends as usual. Anyone with access to the server can log in to the book apps (see SSO).
 
 ### Seerr (`overseerr.`)
