@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-09
+
+### Changes
+- `plex-compose.yml`: dropped `ADVERTISE_IP`. It's a `plexinc/pms-docker` setting (first run only); the linuxserver image ignores it. Plex's advertised addresses are the "Custom server access URLs" setting (`customConnections` in Preferences.xml), currently `https://plex.punchwizard.com`. No change in behaviour.
+
 ## 2026-11-01
 
 ### Changes

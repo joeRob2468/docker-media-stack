@@ -105,7 +105,7 @@ setopt HIST_IGNORE_SPACE
    | `MEDIA_VOLUME` | root of `data/` and `docker_data/` |
    | `TZ` | timezone for all containers (`America/Chicago`) |
    | `PUID` / `PGID` | user/group the apps run as (1000) |
-   | `LAN_IP` | Plex `ADVERTISE_IP` |
+   | `LAN_IP` | the server's LAN address, for pointing the hostnames at it on the LAN (not used by any container) |
    | `PLEX_SERVER_ID` | Plex machine identifier allowed to log in via Authentik. A **new** Plex server gets a new ID: after Plex is set up, copy it from https://plex.tv/api/v2/resources (`clientIdentifier` of the server, needs your Plex token) and run `docker compose up -d authentik-worker` |
 3. Create folders (owned by uid 1000):
    ```

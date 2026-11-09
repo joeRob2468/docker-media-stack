@@ -46,7 +46,6 @@ services:
       TZ: ${TZ}
       PUID: ${PUID}
       PGID: ${PGID}
-      ADVERTISE_IP: https://${LAN_IP}:32400/,https://plex.${DOMAIN}/
     volumes:
       - plex:/config
       - media:/media
