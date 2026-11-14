@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-13
+
+### Changes
+- `shelfmark/postprocess.py`: audiobook `metadata.opf` no longer gets a `<dc:subtitle>`. Shelfmark's Hardcover subtitle was wrong or redundant in every audiobook so far (Hell Bent: "Groucho Marx, Sein Leben"; Ninth House: "Strategies for Reading, Writing, Speaking, and Listening"; others repeated the series or title).
+
 ## 2026-11-09
 
 ### Changes

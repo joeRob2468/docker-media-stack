@@ -12,6 +12,8 @@ Other formats are moved unchanged. If editing fails, the file is still moved as-
 
 Audiobooks: write metadata.opf into the book folder; Audiobookshelf reads it (incl. series
 number, which the folder name doesn't carry). Existing metadata.opf files are left alone.
+No subtitle: Hardcover's is often another book's ("Groucho Marx, Sein Leben" for Hell Bent)
+or just the series again.
 """
 import json
 import os
@@ -128,8 +130,6 @@ def write_audiobook_opf(folder: Path, meta: dict) -> None:
     lines += [f'    <dc:creator opf:role="aut">{escape(a)}</dc:creator>' for a in meta["authors"]]
     if meta["year"]:
         lines.append(f"    <dc:date>{escape(str(meta['year']))}</dc:date>")
-    if meta["subtitle"]:
-        lines.append(f"    <dc:subtitle>{escape(meta['subtitle'])}</dc:subtitle>")
     if meta["language"]:
         lines.append(f"    <dc:language>{escape(meta['language'])}</dc:language>")
     if meta["series"]:
@@ -219,7 +219,6 @@ def main() -> int:
         "series": task.get("series_name"),
         "index": fmt_index(task.get("series_position")),
         "year": task.get("year"),
-        "subtitle": task.get("subtitle"),
         "language": task.get("language"),
     }
     fill_series(task, meta)
