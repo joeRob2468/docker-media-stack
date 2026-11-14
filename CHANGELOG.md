@@ -3,6 +3,7 @@
 ## 2026-11-13
 
 ### Changes
+- `env/shelfmark.env`: Shelfmark automatic downloads on (`AUTO_DOWNLOAD_ENABLED`, pass every 30 min). Only admins' own pending requests qualify; users' `request_book` requests still wait for an admin.
 - `shelfmark/postprocess.py`: audiobook `metadata.opf` no longer gets a `<dc:subtitle>`. Shelfmark's Hardcover subtitle was wrong or redundant in every audiobook so far (Hell Bent: "Groucho Marx, Sein Leben"; Ninth House: "Strategies for Reading, Writing, Speaking, and Listening"; others repeated the series or title).
 - Shelfmark v1.5.1 → v1.7.0. It includes the upstream fixes for our reports calibrain/shelfmark#1585 (books requested from Hardcover search results keep their series; PR #1589) and #1584 (library check matches "Series: Title" books; PR #1587).
 - `books-compose.yml`: `com.dockmon.update.policy=allow` on `shelfmark`. DockMon had reported the update nightly without installing it.
