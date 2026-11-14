@@ -7,7 +7,7 @@
 - Shelfmark v1.5.1 → v1.7.0. It includes the upstream fixes for our reports calibrain/shelfmark#1585 (books requested from Hardcover search results keep their series; PR #1589) and #1584 (library check matches "Series: Title" books; PR #1587).
 - `books-compose.yml`: `com.dockmon.update.policy=allow` on `shelfmark`. DockMon had reported the update nightly without installing it.
 - `shelfmark/postprocess.py`: removed the Hardcover series lookup (`fill_series`), our workaround for #1585.
-- `secrets/aa-donator-key.secret` emptied (there's no Anna's Archive membership; old value kept on the server as `.bak-20261113`). Every download got `401` from the fast-download API and waited out 10 retries (~40 s) before falling back to free downloads.
+- `secrets/aa-donator-key.secret` emptied (there's no Anna's Archive membership; old value kept on the server as `aa-donator-key-old-20261113.secret`). Every download got `401` from the fast-download API and waited out 10 retries (~40 s) before falling back to free downloads.
 - Audiobookshelf: cleared the bad subtitles on 5 audiobooks (via API and in their `metadata.opf`). Moved `Leigh Bardugo/Dead Beat` to `Leigh Bardugo/Ninth House/Dead Beat`, where #1585 should have put it; ABS kept the same item.
 
 ## 2026-11-09
