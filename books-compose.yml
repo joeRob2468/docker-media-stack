@@ -93,6 +93,8 @@ services:
       - traefik.http.routers.books.rule=Host(`books.${DOMAIN}`)
       - traefik.http.routers.books.entrypoints=websecure
       - traefik.http.services.books.loadbalancer.server.port=8084
+      # DockMon installs updates nightly (default policy only reports them)
+      - com.dockmon.update.policy=allow
     depends_on:
       traefik:
         condition: service_healthy
